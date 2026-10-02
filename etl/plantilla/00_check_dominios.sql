@@ -1,5 +1,5 @@
 -- Verifica que todo código de dominio usado en los datos origen exista como ilicode en el enum destino
--- Parámetro psql: -v esq=<esquema origen>
+-- Parámetros psql: -v esq=<esquema origen> -v vigencia=<año>
 SELECT set_config('mig.esq', :'esq', false);
 DROP TABLE IF EXISTS tmp_dom_check;
 CREATE TABLE tmp_dom_check(uso text, tgt_enum text, code text, n bigint, existe boolean);
@@ -39,7 +39,18 @@ BEGIN
    ('extdireccion_clase_via_principal','extdireccion_clase_via_principal','extdireccion','clase_via_principal'),
    ('extdireccion_sector_ciudad','extdireccion_sector_ciudad','extdireccion','sector_ciudad'),
    ('extdireccion_sector_predio','extdireccion_sector_predio','extdireccion','sector_predio'),
-   ('cc_nomenclaturavial_tipo_via','cc_nomenclaturavial_tipo_via','cc_nomenclaturavial','tipo_via')
+   ('cc_nomenclaturavial_tipo_via','cc_nomenclaturavial_tipo_via','cc_nomenclaturavial','tipo_via'),
+   ('gc_puntotipo','col_puntotipo','gc_puntolindero','punto_tipo'),
+   ('gc_acuerdotipo','lc_acuerdotipo','gc_puntolindero','acuerdo'),
+   ('gc_fotoidentificaciontipo','lc_fotoidentificaciontipo','gc_puntolindero','fotoidentificacion'),
+   ('col_metodoproducciontipo','col_metodoproducciontipo','gc_puntolindero','metodo_produccion'),
+   ('gc_puntotipo','col_puntotipo','gc_puntolevantamiento','punto_tipo'),
+   ('gc_puntolevtipo','lc_puntolevtipo','gc_puntolevantamiento','tipo_punto_levantamiento'),
+   ('gc_fotoidentificaciontipo','lc_fotoidentificaciontipo','gc_puntolevantamiento','fotoidentificacion'),
+   ('col_metodoproducciontipo','col_metodoproducciontipo','gc_puntolevantamiento','metodo_produccion'),
+   ('gc_fuenteespacialtipo','col_fuenteespacialtipo','gc_fuenteespacial','tipo'),
+   ('col_estadodisponibilidadtipo','col_estadodisponibilidadtipo','gc_fuenteespacial','estado_disponibilidad'),
+   ('extreferenciaregistralsistemaantiguo_tipo_referencia','extreferenciaregistralsistemaantiguo_tipo_referencia','extreferenciaregistralsistemaantiguo','tipo_referencia')
   ) AS v(src_dom, tgt_enum, src_tab, src_col)
   LOOP
     IF to_regclass(format('%I.%I', esq, r.src_tab)) IS NULL THEN
@@ -57,4 +68,30 @@ BEGIN
 END $$;
 
 SELECT uso, tgt_enum, code, n FROM tmp_dom_check WHERE NOT existe ORDER BY uso, code;
+
+-- Zonas físicas: atributos de texto libre que deben coincidir con un ilicode del dominio destino
+SELECT set_config('mig.vig', :'vigencia', false);
+DROP TABLE IF EXISTS tmp_dom_zhf;
+CREATE TABLE tmp_dom_zhf(uso text, code text, n bigint, existe boolean);
+DO $$
+DECLARE r record; esq text := current_setting('mig.esq');
+BEGIN
+  FOR r IN SELECT * FROM (VALUES
+   ('zhf_rural','disponibilidad_agua','av_disponibilidadaguatipo'),
+   ('zhf_rural','influencia_vial','av_influenciavialruraltipo'),
+   ('zhf_rural','uso_actual_suelo','av_usosueloruraltipo'),
+   ('zhf_urbana','topografia','av_topografiazonatipo'),
+   ('zhf_urbana','influencia_vial','av_influenciavialurbanatipo'),
+   ('zhf_urbana','servicio_publico','av_serviciospublicostipo'),
+   ('zhf_urbana','uso_actual_suelo','av_usosuelourbanotipo'),
+   ('zhf_urbana','tipificacion_construccion','av_tipificacionconstrucciontipo')) v(tab,col,enum)
+  LOOP
+    EXECUTE format(
+      'INSERT INTO tmp_dom_zhf SELECT %L, t.%I, count(*),
+         EXISTS(SELECT 1 FROM lev_cat_12.%I e WHERE e.ilicode = t.%I)
+       FROM %I.%I t WHERE t.%I IS NOT NULL AND date_part(''year'', t.vigencia) = %s GROUP BY t.%I',
+      r.tab||'.'||r.col, r.col, r.enum, r.col, esq, r.tab, r.col, current_setting('mig.vig'), r.col);
+  END LOOP;
+END $$;
+SELECT uso, code, n FROM tmp_dom_zhf WHERE NOT existe ORDER BY 1,2;
 SELECT count(*) AS total_pares_ok FROM tmp_dom_check WHERE existe;

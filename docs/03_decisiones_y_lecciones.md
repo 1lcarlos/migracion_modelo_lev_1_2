@@ -31,8 +31,35 @@ nuevo**: casi todo lo que falla ya falló antes.
 | 4 agrupaciones de interesados con 1 solo miembro tras dedup (la fuente repetía a la misma persona) | El derecho pasa al interesado directo; se elimina la agrupación y su membresía (el modelo exige ≥2 miembros) |
 | Terreno `t_id 3050136` con auto-intersección persistente | `ST_Buffer(geom, 0)` previo al pipeline de limpieza |
 
+### Vergara (cun25862) — vigencia 2023
+
+| Situación | Decisión |
+|---|---|
+| id de origen hasta ~2,5 millones (predio, interesado, fuente, uebaunit…) | Offsets de t_id ampliados de 1M a 100M por clase en la plantilla (t_id bigint) |
+| El gestor no tiene `tb_valortipologia` | `av_tipologiaconstruccion` queda vacía (la plantilla omite el bloque con aviso) |
+| 143 pares repetidos (unidad espacial, predio) en `col_uebaunit` (62 construcciones, 81 unidades) | Se conserva el de menor id (`DISTINCT ON` en la plantilla) |
+| 85 predios sin unidad espacial | Se migran igual (regla común) |
+| ~60 polígonos con micro auto-intersección tras el snap | `ST_Buffer(0)` + limpieza, ahora global en `02_fix_validacion` |
+| Linderos, puntos, CCL, fuentes espaciales, informalidad y ref. registral antigua no se migraban (ETL heredado de Tibacuy) | Incorporados a la plantilla (secciones 12b–12d). Se migran todos los linderos y puntos; las relaciones CCL solo hacia UE migradas (17 `col_masccl` excluidas: 2 terrenos de predios sin avalúo 2023) |
+| `col_baunitfuente` vacía en el gestor | Derivada de `gc_fuenteespacial.descripcion` = número predial (10.125). 14 fuentes sin predio en el backup quedan fuera |
+| Atributos de zonas físicas en texto libre ("Zonas con aguas abundantes") | Homologados por `dispname` del dominio con `public.fx_dom` |
+| `Tipo_Principal` de fuentes | Regla del XTF de referencia: fuente administrativa con estado `Desconocido` → `Otro`; fuente espacial `Registro_Fotografico` → `Imagen` |
+| Contacto de visita, novedades de números prediales, observaciones y avalúo de unidades no existen en el backup | Decisión del usuario (2026-10-02): tomarlos del XTF `comparacion/Vergara_20230207_1720.xtf` (etapa `complemento`). Cruce de características por huella 1 a 1 (11.062/11.062); datos adicionales por número predial (6.123/6.136, los 13 restantes son predios que ya no existen) |
+| Diferencias que se mantienen frente al XTF de feb-2023 | 13 predios del XTF ya no están en el backup; `Nombre` del predio distinto en 1.195 (se respeta la fuente); el XTF previo no trae avalúo del predio |
+
 ## Catálogo de errores de validación ili2pg
 
+### `OID ...col_ueBaunit:<uuid>:<uuid> of object col_ueBaunit already exists`
+
+- **Causa**: la fuente repite el mismo par (unidad espacial, predio) en `col_uebaunit`; el
+  OID de la asociación es el par de OIDs, así que el duplicado choca (Vergara: 143).
+- **Solución**: `DISTINCT ON (ue_*, baunit)` conservando el menor `t_id` al insertar
+  (plantilla `01_migracion.sql`, sección 10).
+
+### `Tabla ... tiene id ... >= 100.000.000` (abort del ETL, no de ili2pg)
+
+- **Causa**: la estrategia `t_id = N·10⁸ + id` no admite ids de origen tan grandes.
+- **Solución**: si aparece, cambiar a tabla de mapeo id_origen → t_id por secuencia.
 ### `duplicate coord at (x, y, z)`
 
 - **Causa raíz**: dos vértices consecutivos que quedan idénticos al redondear a 3 decimales
@@ -40,7 +67,7 @@ nuevo**: casi todo lo que falla ya falló antes.
   datos fuente**, sino `ST_MakeValid` aplicado al final del pipeline: al resolver polígonos
   con auto-intersección crea vértices nuevos fuera de la grilla y polígonos "astilla" de
   área ~0 con vértices a <1 mm.
-- **Solución probada** (función `fx_limpiar_poligono` en los scripts 02/03):
+- **Solución probada** (función `fx_limpiar_poligono` en `etl/plantilla/02_fix_validacion.sql`):
   1. `ST_MakeValid` **primero** (resuelve auto-intersecciones),
   2. descartar componentes con `ST_Area < 0.01` m² (astillas),
   3. `ST_SnapToGrid(geom, 0.001)` (alinear a la precisión del XTF),
@@ -66,7 +93,7 @@ nuevo**: casi todo lo que falla ya falló antes.
 - **Causa**: `LC_AgrupacionInteresados` con un solo miembro (consecuencia del dedup).
 - **Solución**: reasignar el derecho al interesado único (`interesado_lc_interesado`),
   poner `interesado_lc_agrupacioninteresados = NULL`, borrar membresía y agrupación
-  (script `03_fix_revalidacion_tibirita.sql`, sección b).
+  (hoy en `etl/plantilla/02_fix_validacion.sql`, sección 2).
 
 ### `Self-intersection at or near point ...` (ST_IsValid falla tras el snap)
 

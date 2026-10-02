@@ -75,6 +75,15 @@ UPDATE lev_cat_12.cc_vereda SET geometria = COALESCE(public.fx_limpiar_poligono(
 UPDATE lev_cat_12.cc_nomenclaturavial
 SET geometria = ST_Force3D(ST_Multi(ST_CollectionExtract(ST_MakeValid(ST_RemoveRepeatedPoints(ST_SnapToGrid(geometria,0.001),0.002)),2)));
 
+-- Linderos (líneas) y puntos: alinear a 1 mm; un lindero que colapsa (< 2 vértices) queda NULL
+UPDATE lev_cat_12.lc_lindero
+SET geometria = ST_Force3D(ST_RemoveRepeatedPoints(ST_SnapToGrid(geometria,0.001),0.002))
+WHERE geometria IS NOT NULL;
+UPDATE lev_cat_12.lc_lindero SET geometria = NULL
+WHERE geometria IS NOT NULL AND (ST_NPoints(geometria) < 2 OR ST_Length(geometria) = 0);
+UPDATE lev_cat_12.lc_puntolindero SET geometria = ST_Force3D(ST_SnapToGrid(geometria,0.001));
+UPDATE lev_cat_12.lc_puntolevantamiento SET geometria = ST_Force3D(ST_SnapToGrid(geometria,0.001));
+
 -- 5. Polígonos que el snap dejó con micro auto-intersección: buffer(0) y limpiar de nuevo
 UPDATE lev_cat_12.lc_terreno
 SET geometria = COALESCE(public.fx_limpiar_poligono(ST_Buffer(geometria,0)), geometria)
