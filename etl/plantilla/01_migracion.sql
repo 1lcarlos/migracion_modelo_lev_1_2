@@ -259,12 +259,14 @@ INSERT INTO lev_cat_12.lc_construccion
   observaciones, geometria, etiqueta,
   comienzo_vida_util_version, fin_vida_util_version, espacio_de_nombres, local_id)
 SELECT 400000000+c.id, 1, md5(:'mun'||'_lc_construccion'||c.id)::uuid,
-  COALESCE(c.identificador, c.codigo, c.id::text),
+  -- Identificador TEXT*20: si falta, el código solo si cabe (Guatavita: 7 con el NPN de 30) o el id de origen
+  COALESCE(NULLIF(btrim(c.identificador),''), CASE WHEN length(btrim(c.codigo)) BETWEEN 1 AND 20 THEN btrim(c.codigo) END, c.id::text),
   (SELECT e.t_id FROM lev_cat_12.lc_construcciontipo e WHERE e.ilicode=tc.text_code),
   (SELECT e.t_id FROM lev_cat_12.lc_dominioconstrucciontipo e WHERE e.ilicode=tdo.text_code),
   COALESCE(c.numero_pisos,1), c.numero_sotanos, c.numero_mezanines, c.numero_semisotanos,
   CASE WHEN c.anio_construccion BETWEEN 1550 AND 2500 THEN c.anio_construccion END,
-  NULL, c.valor_referencia, round(c.area,1),
+  -- Area_Construccion MANDATORY: sin área en el origen -> área geométrica (Guatavita 12, Facatativá 14, ...)
+  NULL, c.valor_referencia, COALESCE(round(c.area,1), round(ST_Area(c.geometria)::numeric,1)),
   CASE WHEN c.altura > 0 THEN round(c.altura,2) END,
   c.observacion,
   NULLIF(ST_Multi(ST_CollectionExtract(ST_MakeValid(c.geometria),3)),
@@ -295,7 +297,10 @@ SELECT 600000000+k.id, 1, md5(:'mun'||'_lc_caract'||k.id)::uuid,
   k.total_habitaciones, k.total_banios, k.total_locales, k.total_plantas,
   (SELECT e.t_id FROM lev_cat_12.lc_usouconstipo e WHERE e.ilicode=us.text_code),
   CASE WHEN k.anio_construccion BETWEEN 1512 AND 2500 THEN k.anio_construccion END,
-  NULL, round(k.area,1), round(k.area_privada_construida,1), k.observacion,
+  -- Area_Construida MANDATORY: sin área -> suma de las áreas de sus unidades (Villeta 1)
+  NULL, COALESCE(round(k.area,1), (SELECT round(sum(COALESCE(u.area, ST_Area(u.geometria)))::numeric,1)
+        FROM :"esq".gc_unidadconstruccion u WHERE u.gc_caracteristicasunidadconstruccion=k.id)),
+  round(k.area_privada_construida,1), k.observacion,
   COALESCE(k.comienzo_vida_util_version, make_date(:vigencia,1,1)), k.fin_vida_util_version,
   COALESCE(NULLIF(btrim(k.espacio_de_nombres),''),'LC_CARACTERISTICASUNIDADCONSTRUCCION'), COALESCE(NULLIF(btrim(k.local_id),''), k.id::text)
 FROM :"esq".gc_caracteristicasunidadconstruccion k
@@ -314,7 +319,8 @@ INSERT INTO lev_cat_12.lc_unidadconstruccion
   lc_caracteristicasunidadconstruccion, lc_construccion, etiqueta,
   comienzo_vida_util_version, fin_vida_util_version, espacio_de_nombres, local_id)
 SELECT 500000000+uc.id, 1, md5(:'mun'||'_lc_uc'||uc.id)::uuid,
-  COALESCE(uc.planta_ubicacion,1), round(uc.area,1),
+  -- Area_Construida MANDATORY: sin área en el origen -> área geométrica
+  COALESCE(uc.planta_ubicacion,1), COALESCE(round(uc.area,1), round(ST_Area(uc.geometria)::numeric,1)),
   CASE WHEN uc.altura >= 1 THEN round(uc.altura)::int END,
   NULLIF(ST_Multi(ST_CollectionExtract(ST_MakeValid(uc.geometria),3)),
          ST_SetSRID('MULTIPOLYGON EMPTY'::geometry, 9377)),
@@ -604,6 +610,12 @@ WHERE c.ccl_menos IS NOT NULL AND (
      c.ue_menos_gc_terreno IN (SELECT id FROM mig_terreno) OR c.ue_menos_gc_construccion IN (SELECT id FROM mig_constr)
   OR c.ue_menos_gc_unidadconstruccion IN (SELECT id FROM mig_uc) OR c.ue_menos_gc_servidumbretransito IN (SELECT id FROM mig_serv));
 
+-- LC_Lindero exige >= 2 puntos (col_puntoCcl). Los linderos sin puntos en el origen se excluyen con sus
+-- relaciones col_masCcl/col_menosCcl (Nocaima: 6). No se generan puntos a partir de la geometría.
+DELETE FROM mig_lindero l
+WHERE (SELECT count(*) FROM :"esq".col_puntoccl c
+       WHERE c.ccl = l.id AND (c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL)) < 2;
+
 CREATE TEMP TABLE mig_puntolindero AS
 SELECT DISTINCT c.punto_gc_puntolindero AS id FROM :"esq".col_puntoccl c
 JOIN mig_lindero l ON l.id=c.ccl WHERE c.punto_gc_puntolindero IS NOT NULL;
@@ -668,6 +680,7 @@ SELECT 3800000000+c.id, 1, 3400000000+c.ccl_mas,
   CASE WHEN mu.id IS NOT NULL THEN 500000000+mu.id END,
   CASE WHEN ms.id IS NOT NULL THEN 4800000000+ms.id END
 FROM :"esq".col_masccl c
+JOIN mig_lindero ml ON ml.id=c.ccl_mas
 LEFT JOIN mig_terreno mt ON mt.id=c.ue_mas_gc_terreno
 LEFT JOIN mig_constr mc ON mc.id=c.ue_mas_gc_construccion
 LEFT JOIN mig_uc mu ON mu.id=c.ue_mas_gc_unidadconstruccion
@@ -683,6 +696,7 @@ SELECT 3900000000+c.id, 1, 3400000000+c.ccl_menos,
   CASE WHEN mu.id IS NOT NULL THEN 500000000+mu.id END,
   CASE WHEN ms.id IS NOT NULL THEN 4800000000+ms.id END
 FROM :"esq".col_menosccl c
+JOIN mig_lindero ml ON ml.id=c.ccl_menos
 LEFT JOIN mig_terreno mt ON mt.id=c.ue_menos_gc_terreno
 LEFT JOIN mig_constr mc ON mc.id=c.ue_menos_gc_construccion
 LEFT JOIN mig_uc mu ON mu.id=c.ue_menos_gc_unidadconstruccion

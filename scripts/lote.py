@@ -11,7 +11,7 @@ Lee los municipios de config/lote_25.csv y, para cada uno, ejecuta las etapas en
   etl         00_homologaciones + 01_migracion.
   fix         02_fix_validacion (aborta si algún control queda distinto de 0).
   verificar   03_verificacion (aborta si el avalúo/predios/ZH/copropiedad no cuadran; guarda métricas).
-  exportar    ili2pg --export (válido solo si el log termina en "...export done").
+  exportar    ili2pg --export --disableValidation (ok solo si el log termina en "...export done").
   validar     ilivalidator (válido solo si el log termina en "...validation done"); genera .sha256.
 
 Cada corrida deja salida/lote_25/<mun>/manifiesto.json (fuente, hashes, commit, herramientas, etapas,
@@ -218,9 +218,29 @@ def etapa_preparar(E, m, args):
     log = m.logs / "preparar.log"
     E.psql("postgres", log, ["-c", f'DROP DATABASE IF EXISTS "{m.bd}" WITH (FORCE)', "-c", f'CREATE DATABASE "{m.bd}"'])
     E.psql(m.bd, log, ["-c", 'CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'])
-    rc, out = E.ejecutar([E.pg_restore, "-d", m.bd, "-w", "--no-owner", "--no-privileges", "--exit-on-error", str(m.dump)], log)
+    # Triggers y funciones del gestor no se restauran: la migración solo lee datos y algunos llaman a
+    # esquemas externos que no vienen en el dump (attr_sync, Sutatausa). Se registran en el manifiesto.
+    p = subprocess.run([E.pg_restore, "-l", str(m.dump)], cwd=RAIZ, env=E.proc_env, capture_output=True, text=True)
+    if p.returncode != 0:
+        raise EtapaFallida(f"pg_restore -l falló: {p.stderr.strip()}")
+    excluir = ("TRIGGER", "FUNCTION", "PROCEDURE", "RULE", "EVENT TRIGGER", "AGGREGATE")
+    lista, excluidos = [], []
+    for linea in p.stdout.splitlines():
+        partes = linea.split()
+        tipo = " ".join(partes[3:5]) if len(partes) > 4 and partes[3] == "EVENT" else (partes[3] if len(partes) > 3 else "")
+        if not linea.startswith(";") and tipo in excluir:
+            excluidos.append(" ".join(partes[3:]))
+        else:
+            lista.append(linea)
+    lista_ruta = m.logs / "restore_lista.txt"
+    lista_ruta.write_text(chr(10).join(lista) + chr(10), encoding="utf-8")
+    m.manifiesto.setdefault("fuente", {})["objetos_no_restaurados"] = excluidos
+    rc, out = E.ejecutar([E.pg_restore, "-d", m.bd, "-w", "--no-owner", "--no-privileges", "--exit-on-error",
+                          "-L", str(lista_ruta), str(m.dump)], log)
     if rc != 0:
         raise EtapaFallida(f"pg_restore falló (ver {rel(log)})")
+    if excluidos:
+        print(f"   no restaurados (triggers/funciones del gestor): {len(excluidos)}")
     E.psql(m.bd, log, ["-q", "-f", PLANTILLA_SQL])
     n = E.escalar(m.bd, f"SELECT count(*) FROM {m.esq}.gc_predio")
     print(f"   {m.bd}: {n} predios en {m.esq}")
@@ -284,7 +304,9 @@ def etapa_exportar(E, m, args):
     for p in (m.xtf, parcial, Path(str(m.xtf) + ".sha256"), Path(str(m.xtf) + ".INVALIDO"), log):
         p.unlink(missing_ok=True)
     pwd = E.e["PGPASSWORD"]
-    cmd = [E.java, *E.java_opts, "-jar", E.ili2pg, "--export", "--exportTid",
+    # ili2pg solo escribe (--disableValidation): la validación la hace ilivalidator en la etapa validar
+    # (mismo motor iox-ili, más estricto). Validar dos veces duplicaba el tiempo.
+    cmd = [E.java, *E.java_opts, "-jar", E.ili2pg, "--export", "--exportTid", "--disableValidation",
            "--dbhost", E.e.get("PGHOST", "localhost"), "--dbport", E.e.get("PGPORT", "5432"),
            "--dbdatabase", m.bd, "--dbusr", E.e.get("PGUSER", "postgres"), "--dbpwd", pwd,
            "--dbschema", "lev_cat_12", "--defaultSrsCode", "9377", "--models", MODELOS,
@@ -292,14 +314,14 @@ def etapa_exportar(E, m, args):
     E.ejecutar(cmd, m.logs / "exportar.log", ocultar=(pwd,))
     lineas = log.read_text(encoding="utf-8", errors="replace").splitlines() if log.exists() else []
     ok = bool(lineas) and "...export done" in lineas[-1]
-    m.manifiesto["xtf"] = {"archivo": rel(m.xtf), "ili2pg": "valido" if ok else "invalido", "log_ili2pg": rel(log)}
+    m.manifiesto["xtf"] = {"archivo": rel(m.xtf), "ili2pg": "exportado" if ok else "fallido", "log_ili2pg": rel(log)}
     if ok:
         parcial.replace(m.xtf)
     else:
         if parcial.exists():
             parcial.replace(Path(str(m.xtf) + ".INVALIDO"))
         errores = sorted({l for l in lineas if l.startswith("Error")})[:10]
-        raise EtapaFallida("ili2pg: XTF inválido. " + " | ".join(errores))
+        raise EtapaFallida("ili2pg: la exportación falló. " + " | ".join(errores))
 
 
 def etapa_validar(E, m, args):
@@ -358,9 +380,12 @@ def procesar(E, m, etapas, args, codigo, herramientas):
     # el manifiesto no conserva estados "ok" de una corrida anterior.
     for e in ETAPAS[ETAPAS.index(etapas[0]):]:
         registro[e] = {"estado": "pendiente"}
-    if "exportar" in etapas or "validar" in etapas:
+    if "exportar" in etapas:
         m.manifiesto.pop("xtf", None)
+    if "exportar" in etapas or "validar" in etapas:
         Path(str(m.xtf) + ".sha256").unlink(missing_ok=True)
+        for k in ("ilivalidator", "ilivalidator_errores", "ilivalidator_avisos", "sha256", "bytes"):
+            m.manifiesto.get("xtf", {}).pop(k, None)
     m.manifiesto["estado"] = "en_curso"
     m.guardar()
     for e in etapas:

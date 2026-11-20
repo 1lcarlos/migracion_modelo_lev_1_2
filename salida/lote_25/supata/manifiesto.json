@@ -1,0 +1,110 @@
+{
+  "municipio": {
+    "codigo": "25777",
+    "mun": "supata",
+    "nombre": "Supatá",
+    "vigencia": "2023",
+    "actualizacion": "urbana_rural",
+    "prefijo": "SUPATA_"
+  },
+  "bd_trabajo": "l25_supata",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "scripts/lote.py",
+      "salida/lote_25/guatavita/",
+      "salida/lote_25/nimaima/",
+      "salida/lote_25/nocaima/",
+      "salida/lote_25/quebradanegra/",
+      "salida/lote_25/sutatausa/",
+      "salida/lote_25/tibacuy/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "62c2a16b710ebf8d351c646b9303ec169cc370f13dcbf9762b7ab046769de3be",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "e9e59018e8d00d72e0195d14e9dead27fb7375edb40c907f3f37cf58304e71d0",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T13:47:27",
+      "estado": "ok",
+      "fin": "2026-11-20T13:47:45",
+      "segundos": 17.5
+    },
+    "preparar": {
+      "inicio": "2026-11-20T13:47:45",
+      "estado": "ok",
+      "fin": "2026-11-20T13:48:08",
+      "segundos": 23.3
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T13:48:08",
+      "estado": "ok",
+      "fin": "2026-11-20T13:48:08",
+      "segundos": 0.1
+    },
+    "dominios": {
+      "inicio": "2026-11-20T13:48:08",
+      "estado": "ok",
+      "fin": "2026-11-20T13:48:10",
+      "segundos": 1.3
+    },
+    "etl": {
+      "inicio": "2026-11-20T13:48:10",
+      "estado": "ok",
+      "fin": "2026-11-20T13:48:47",
+      "segundos": 37.3
+    },
+    "fix": {
+      "inicio": "2026-11-20T13:48:47",
+      "estado": "fallida",
+      "fin": "2026-11-20T13:48:50",
+      "segundos": 3.5,
+      "error": "psql:etl/plantilla/02_fix_validacion.sql:205: ERROR:  FIX: controles distintos de 0: derechos_sin_fuente=160"
+    },
+    "verificar": {
+      "estado": "pendiente"
+    },
+    "exportar": {
+      "estado": "pendiente"
+    },
+    "validar": {
+      "estado": "pendiente"
+    }
+  },
+  "estado": "fallida en fix",
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25777",
+    "dump": "insumos/lote_25/supata_acc_mayo_2023_cun25777.dump",
+    "dump_sha256": "e6b3121c8b5578fe1d2be55fcd67c49af9bc116d26258810e78f8fdc29d0ebfb",
+    "dump_fecha": "2026-11-20T13:47:45",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 56,
+      "sha256": {
+        "insumos/lote_25/supata_acc_2024_tb_valortipologia.tsv": "023d01d95d70788bb11c18a14d2a5a02f87f11cafa42be5c850b306eeff6c1b9",
+        "insumos/lote_25/supata_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    },
+    "objetos_no_restaurados": []
+  }
+}

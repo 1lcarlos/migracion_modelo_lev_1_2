@@ -27,6 +27,9 @@ Ver `05_lote_25_municipios.md` §2–3.
 | Linderos y puntos de lindero | Solo los que delimitan una unidad espacial migrada (`col_masccl`/`col_menosccl`) y sus puntos. Los puntos de levantamiento se migran todos. Métrica `excluido_linderos_sin_ue_migrada` |
 | `local_id` / `espacio_de_nombres` vacíos (`''`) en el origen | Se tratan como NULL → id / nombre de la clase (Chaguaní: 2 fuentes administrativas; ili2pg exporta, ilivalidator rechaza `Attribute Local_Id requires a value`) |
 | `comienzo_vida_util_version` NULL en el origen (MANDATORY). Preflight 2026-11-20: 10 de 25 municipios, ~500 objetos (terrenos, construcciones, unidades, características; Subachoque también 2 derechos y 3 interesados) | Terreno, construcción, unidad y derecho heredan la fecha de su predio (la menor si hay varios); el resto (características, interesados, agrupaciones, linderos, puntos) toma el 1 de enero de la vigencia, igual que las servidumbres. Métrica `imputado_comienzo_vida_util`. **Aprobada por el usuario 2026-11-20.** El interesado placeholder `SIN DATO` usaba `now()` (XTF distinto en cada corrida): ahora usa la misma regla |
+| Linderos con menos de 2 puntos (`col_puntoccl`) en el origen; el modelo exige ≥ 2 (`punto should associate 2 to *`, ilivalidator). Nocaima: 6 | Se excluyen con sus `col_masCcl`/`col_menosCcl` (los terrenos quedan). No se generan puntos desde la geometría. Métrica `excluido_linderos_menos_2_puntos` |
+| Áreas MANDATORY nulas en el origen (preflight: construcciones en Anapoima 12, Facatativá 14, Guatavita 12, San Antonio 37; unidades en Anapoima, Guatavita, Apulo, San Antonio; 1 característica en Villeta) | Construcción y unidad: área geométrica (igual que el terreno); características: suma de las áreas de sus unidades. Métrica `imputado_area_construida` |
+| `LC_Construccion.Identificador` (TEXT*20) vacío | Código de la construcción solo si cabe en 20 caracteres, si no el id de origen (Guatavita: 7 con el NPN de 30 en `codigo`) |
 | `AV_TipologiaConstruccion` de municipios 2023 | `tb_valortipologia` vigencia 2023 tomada de `acc_2024` (esquema `aux_tipologia`) |
 
 ### Tibacuy (cun25805)
@@ -186,6 +189,15 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
   muy irregulares.
 - **Solución**: para el registro afectado, `ST_Buffer(geom, 0)` y volver a pasar
   `fx_limpiar_poligono`.
+
+### Polígono válido en el origen que queda inválido tras `fix` (control `constr_invalida` / `terreno_invalido`)
+
+- **Causa**: el snap a 1 mm reintroduce una auto-intersección y el reintento con `ST_Buffer(0)` vuelve a
+  pasar por el snap (Nimaima 2026-11-20: 1 construcción de 97 m²).
+- **Solución** (`02_fix` sección 5b, global): solo para lo que sigue inválido, `ST_ReducePrecision(ST_MakeValid(geom), 0.001)`
+  sobre la geometría previa a la limpieza. GEOS redondea a la grilla preservando la validez (Hausdorff 0,5 mm).
+  Las geometrías que ya salían válidas no cambian. **No** aplicarlo sobre la geometría ya dañada: el pico que
+  crea el snap se convierte en un desplazamiento de 1,2 m.
 
 ### Violación NOT NULL en el INSERT del ETL
 

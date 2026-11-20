@@ -7,6 +7,7 @@
 --   4. Limpieza geométrica: MakeValid -> descartar astillas (< 1 cm²)
 --      -> SnapToGrid 1 mm (precisión del XTF) -> RemoveRepeatedPoints 2 mm
 --   5. Reintento con ST_Buffer(0) para polígonos que el snap deja inválidos
+--   5b. Respaldo: ST_ReducePrecision sobre la geometría previa a la limpieza (preserva validez)
 --   6. Geometrías opcionales que colapsan a vacío -> NULL
 --   7. Fin_Vida_Util_Version anterior al comienzo (ObjetoVersionado.Constraint1) -> NULL
 -- Ver docs/03_decisiones_y_lecciones.md (catálogo de errores).
@@ -21,7 +22,23 @@ RETURNS geometry LANGUAGE sql IMMUTABLE AS $$
   ) x WHERE comp IS NOT NULL
 $$;
 
+-- Respaldo para polígonos que la limpieza deja inválidos: redondeo a 1 mm con ST_ReducePrecision (GEOS),
+-- que a diferencia de ST_SnapToGrid preserva la validez. Devuelve NULL si el resultado queda vacío.
+CREATE OR REPLACE FUNCTION public.fx_reducir_precision(geom geometry)
+RETURNS geometry LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE WHEN ST_IsEmpty(g) THEN NULL ELSE ST_Force3D(ST_Multi(g)) END
+  FROM (SELECT ST_CollectionExtract(ST_ReducePrecision(ST_MakeValid(ST_Force2D(geom)), 0.001), 3) AS g) x
+$$;
+
 BEGIN;
+
+-- Copia de los polígonos antes de la limpieza (insumo del respaldo de la sección 5b)
+CREATE TEMP TABLE tmp_geom_previa ON COMMIT DROP AS
+SELECT 'terreno'::text AS clase, t_id, geometria FROM lev_cat_12.lc_terreno WHERE geometria IS NOT NULL
+UNION ALL SELECT 'construccion', t_id, geometria FROM lev_cat_12.lc_construccion WHERE geometria IS NOT NULL
+UNION ALL SELECT 'uc', t_id, geometria FROM lev_cat_12.lc_unidadconstruccion WHERE geometria IS NOT NULL
+UNION ALL SELECT 'servidumbre', t_id, geometria FROM lev_cat_12.lc_servidumbretransito WHERE geometria IS NOT NULL;
+CREATE INDEX ON tmp_geom_previa(clase, t_id);
 
 -- 1. Deduplicar col_miembros (mismo interesado en misma agrupación repetido)
 DELETE FROM lev_cat_12.col_miembros m
@@ -99,6 +116,21 @@ UPDATE lev_cat_12.lc_unidadconstruccion
 SET geometria = public.fx_limpiar_poligono(ST_Buffer(geometria,0))
 WHERE geometria IS NOT NULL AND NOT ST_IsValid(geometria);
 
+-- 5b. Si aún quedan inválidos (el snap reintroduce la auto-intersección; Nimaima: 1 construcción válida en
+--     el origen): ST_ReducePrecision sobre la geometría previa a la limpieza (desplazamiento < 1 mm).
+DO $$
+DECLARE r record; n bigint;
+BEGIN
+  FOR r IN SELECT * FROM (VALUES ('terreno','lc_terreno'), ('construccion','lc_construccion'),
+                                 ('uc','lc_unidadconstruccion'), ('servidumbre','lc_servidumbretransito')) v(clase, tabla) LOOP
+    EXECUTE format('UPDATE lev_cat_12.%I d SET geometria = COALESCE(public.fx_reducir_precision(o.geometria), d.geometria)
+                    FROM tmp_geom_previa o WHERE o.clase = %L AND o.t_id = d.t_id
+                      AND d.geometria IS NOT NULL AND NOT ST_IsValid(d.geometria)', r.tabla, r.clase);
+    GET DIAGNOSTICS n = ROW_COUNT;
+    IF n > 0 THEN RAISE NOTICE 'ST_ReducePrecision en %: % geometrías', r.tabla, n; END IF;
+  END LOOP;
+END $$;
+
 -- 6. Geometrías degeneradas que colapsan a vacío: opcionales en construcción/unidad -> NULL
 UPDATE lev_cat_12.lc_unidadconstruccion SET geometria=NULL WHERE geometria IS NOT NULL AND ST_IsEmpty(geometria);
 UPDATE lev_cat_12.lc_construccion SET geometria=NULL WHERE geometria IS NOT NULL AND ST_IsEmpty(geometria);
@@ -140,11 +172,9 @@ BEGIN
   END LOOP;
 END $$;
 
-COMMIT;
-
 -- Verificación: todo debe ser 0; si no, se aborta (ili2pg/ilivalidator fallarían igual, más tarde y
 -- con un mensaje menos claro). Ver docs/03_decisiones_y_lecciones.md.
-CREATE TEMP TABLE tmp_fix_check AS
+CREATE TEMP TABLE tmp_fix_check ON COMMIT DROP AS
 SELECT 'agrup_con_1_miembro' k,
  (SELECT count(*) FROM (SELECT agrupacion FROM lev_cat_12.col_miembros GROUP BY 1 HAVING count(*)<2) x) n
 UNION ALL SELECT 'agrup_sin_miembros',
@@ -161,6 +191,9 @@ UNION ALL SELECT 'constr_invalida', (SELECT count(*) FROM lev_cat_12.lc_construc
 UNION ALL SELECT 'uc_invalida', (SELECT count(*) FROM lev_cat_12.lc_unidadconstruccion WHERE geometria IS NOT NULL AND NOT ST_IsValid(geometria));
 SELECT k, n FROM tmp_fix_check ORDER BY k;
 
+-- Dentro de la transacción: si un control falla se revierte toda la limpieza y `fix` se puede repetir
+-- sobre la salida del ETL (no sobre geometrías ya ajustadas).
+
 DO $$
 DECLARE det text;
 BEGIN
@@ -170,3 +203,5 @@ BEGIN
   END IF;
   RAISE NOTICE 'FIX OK';
 END $$;
+
+COMMIT;

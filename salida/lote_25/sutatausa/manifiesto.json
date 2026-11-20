@@ -1,0 +1,206 @@
+{
+  "municipio": {
+    "codigo": "25781",
+    "mun": "sutatausa",
+    "nombre": "Sutatausa",
+    "vigencia": "2023",
+    "actualizacion": "urbana_rural",
+    "prefijo": "SUTATAUSA_"
+  },
+  "bd_trabajo": "l25_sutatausa",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "scripts/lote.py",
+      "salida/lote_25/guatavita/",
+      "salida/lote_25/nimaima/",
+      "salida/lote_25/nocaima/",
+      "salida/lote_25/quebradanegra/",
+      "salida/lote_25/sutatausa/",
+      "salida/lote_25/tibacuy/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "62c2a16b710ebf8d351c646b9303ec169cc370f13dcbf9762b7ab046769de3be",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "e9e59018e8d00d72e0195d14e9dead27fb7375edb40c907f3f37cf58304e71d0",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T13:41:43",
+      "estado": "ok",
+      "fin": "2026-11-20T13:41:59",
+      "segundos": 15.9
+    },
+    "preparar": {
+      "inicio": "2026-11-20T13:42:36",
+      "estado": "ok",
+      "fin": "2026-11-20T13:43:07",
+      "segundos": 31.6
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T13:43:07",
+      "estado": "ok",
+      "fin": "2026-11-20T13:43:07",
+      "segundos": 0.1
+    },
+    "dominios": {
+      "inicio": "2026-11-20T13:43:07",
+      "estado": "ok",
+      "fin": "2026-11-20T13:43:08",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T13:43:08",
+      "estado": "ok",
+      "fin": "2026-11-20T13:44:33",
+      "segundos": 85.4
+    },
+    "fix": {
+      "inicio": "2026-11-20T13:44:33",
+      "estado": "ok",
+      "fin": "2026-11-20T13:44:43",
+      "segundos": 9.7
+    },
+    "verificar": {
+      "inicio": "2026-11-20T13:44:43",
+      "estado": "ok",
+      "fin": "2026-11-20T13:44:43",
+      "segundos": 0.6
+    },
+    "exportar": {
+      "inicio": "2026-11-20T13:44:43",
+      "estado": "ok",
+      "fin": "2026-11-20T13:45:33",
+      "segundos": 49.9
+    },
+    "validar": {
+      "inicio": "2026-11-20T13:45:33",
+      "estado": "ok",
+      "fin": "2026-11-20T13:47:23",
+      "segundos": 109.4
+    }
+  },
+  "estado": "completo",
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25781",
+    "dump": "insumos/lote_25/sutatausa_acc_mayo_2023_cun25781.dump",
+    "dump_sha256": "73bca4179e05e46bb869244dd75e6a0ab3e6b1f5525d6e51c6bd46363b27495d",
+    "dump_fecha": "2026-11-20T13:41:58",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 55,
+      "sha256": {
+        "insumos/lote_25/sutatausa_acc_2024_tb_valortipologia.tsv": "e1392a0211cdd0411c0a1cf902399450f4f3ecf4997e7fbeb19f6ee45bce6a29",
+        "insumos/lote_25/sutatausa_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    },
+    "objetos_no_restaurados": [
+      "TRIGGER cun25781 gc_predio trg_sync_numero_predial postgres",
+      "TRIGGER cun25781 col_uebaunit trg_sync_uebaunit_relacion postgres"
+    ]
+  },
+  "metricas": {
+    "avaluo_origen": 383091973000.0,
+    "avaluo_destino": 383091973000.0,
+    "predios_con_avaluo_vigencia": 4307,
+    "predios_migrados": 4307,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 59,
+    "copropiedad_destino": 59,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 4307,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 3,
+    "copropiedad_matrices_coef_distinto_1": 0,
+    "interesados_origen_total": 3944,
+    "interesados_sin_derecho_migrado_excluidos": 0,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
+    "imputado_area_construida": 0,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 7,
+    "excluido_linderos_menos_2_puntos": 0,
+    "vigencia_zhf_rural": 2023,
+    "vigencia_zhf_urbana": 2023,
+    "vigencia_zhg_rural": 2023,
+    "vigencia_zhg_urbana": 2023,
+    "conteo.av_tipologiaconstruccion": 21,
+    "conteo.av_zonahomogeneafisicarural": 246,
+    "conteo.av_zonahomogeneafisicaurbana": 24,
+    "conteo.av_zonahomogeneageoeconomicarural": 9,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 14,
+    "conteo.cc_limitemunicipio": 2,
+    "conteo.cc_manzana": 35,
+    "conteo.cc_perimetrourbano": 1,
+    "conteo.cc_sectorrural": 1,
+    "conteo.cc_sectorurbano": 1,
+    "conteo.cc_vereda": 13,
+    "conteo.col_baunitfuente": 13452,
+    "conteo.col_masccl": 26690,
+    "conteo.col_menosccl": 1662,
+    "conteo.col_miembros": 2759,
+    "conteo.col_puntoccl": 106553,
+    "conteo.col_rrrfuente": 8620,
+    "conteo.col_uebaunit": 15963,
+    "conteo.col_unidadfuente": 8620,
+    "conteo.extarchivo": 13663,
+    "conteo.extdireccion": 7875,
+    "conteo.extreferenciaregistralsistemaantiguo": 199,
+    "conteo.lc_agrupacioninteresados": 1014,
+    "conteo.lc_calificacionnoconvencional": 2243,
+    "conteo.lc_caracteristicasunidadconstruccion": 6175,
+    "conteo.lc_construccion": 4760,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 4307,
+    "conteo.lc_datosphcondominio": 24,
+    "conteo.lc_derecho": 4307,
+    "conteo.lc_fuenteadministrativa": 8592,
+    "conteo.lc_fuenteespacial": 13452,
+    "conteo.lc_interesado": 3944,
+    "conteo.lc_lindero": 14004,
+    "conteo.lc_ofertasmercadoinmobiliario": 43,
+    "conteo.lc_predio": 4307,
+    "conteo.lc_predio_copropiedad": 59,
+    "conteo.lc_predio_informalidad": 446,
+    "conteo.lc_puntolevantamiento": 31465,
+    "conteo.lc_puntolindero": 87774,
+    "conteo.lc_servidumbretransito": 2,
+    "conteo.lc_terreno": 4247,
+    "conteo.lc_tipologiaconstruccion": 3932,
+    "conteo.lc_unidadconstruccion": 6954
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/sutatausa/sutatausa_lev_cat_v1_2_vigencia2023.xtf",
+    "ili2pg": "exportado",
+    "log_ili2pg": "logs/lote_25/sutatausa/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/sutatausa/validar_ilivalidator.log",
+    "sha256": "2955f659d7c5d3a4daa5089fa1d77ba65537fa54709cfd241267d79dfb5fa2a6",
+    "bytes": 227749786
+  }
+}

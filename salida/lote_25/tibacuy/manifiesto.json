@@ -1,0 +1,174 @@
+{
+  "municipio": {
+    "codigo": "25805",
+    "mun": "tibacuy",
+    "nombre": "Tibacuy",
+    "vigencia": "2024",
+    "actualizacion": "urbana_rural",
+    "prefijo": "TIBACUY_"
+  },
+  "bd_trabajo": "l25_tibacuy",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/02_fix_validacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "scripts/lote.py",
+      "salida/lote_25/nimaima/",
+      "salida/lote_25/tibacuy/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "4338d4f6042358cd3d345be52b4f502f3e87df3238e2d3967d4658a76f7aa031",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "7719f67f3a8c07ab8935aaebf63149c24511cde50f23a1c2fcdcea3d41489792",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T13:19:08",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:10",
+      "segundos": 2.3
+    },
+    "preparar": {
+      "inicio": "2026-11-20T13:19:10",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:18",
+      "segundos": 8.1
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T13:19:18",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:18",
+      "segundos": 0.0
+    },
+    "dominios": {
+      "inicio": "2026-11-20T13:19:18",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:19",
+      "segundos": 0.3
+    },
+    "etl": {
+      "inicio": "2026-11-20T13:19:19",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:30",
+      "segundos": 11.1
+    },
+    "fix": {
+      "inicio": "2026-11-20T13:19:30",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:31",
+      "segundos": 1.1
+    },
+    "verificar": {
+      "inicio": "2026-11-20T13:19:31",
+      "estado": "ok",
+      "fin": "2026-11-20T13:19:31",
+      "segundos": 0.4
+    },
+    "exportar": {
+      "inicio": "2026-11-20T13:19:36",
+      "estado": "ok",
+      "fin": "2026-11-20T13:20:12",
+      "segundos": 35.7
+    },
+    "validar": {
+      "inicio": "2026-11-20T13:20:12",
+      "estado": "ok",
+      "fin": "2026-11-20T13:21:08",
+      "segundos": 55.8
+    }
+  },
+  "estado": "completo",
+  "fuente": {
+    "bd": "acc_2024",
+    "esquema": "cun25805",
+    "dump": "insumos/lote_25/tibacuy_acc_2024_cun25805.dump",
+    "dump_sha256": "e54dc56e6c0c1e2831e48c4e07d1ba75047b151efea30335a634be25d6205207",
+    "dump_fecha": "2026-11-20T13:19:10"
+  },
+  "metricas": {
+    "avaluo_origen": 389063655000.0,
+    "avaluo_destino": 389063655000.0,
+    "predios_con_avaluo_vigencia": 3334,
+    "predios_migrados": 3334,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 25,
+    "copropiedad_destino": 25,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 3339,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 277,
+    "copropiedad_matrices_coef_distinto_1": 0,
+    "interesados_origen_total": 4573,
+    "interesados_sin_derecho_migrado_excluidos": 5,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "vigencia_zhf_rural": 2024,
+    "vigencia_zhf_urbana": 2024,
+    "vigencia_zhg_rural": 2024,
+    "vigencia_zhg_urbana": 2024,
+    "conteo.av_tipologiaconstruccion": 25,
+    "conteo.av_zonahomogeneafisicarural": 83,
+    "conteo.av_zonahomogeneafisicaurbana": 40,
+    "conteo.av_zonahomogeneageoeconomicarural": 18,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 21,
+    "conteo.cc_centropoblado": 1,
+    "conteo.cc_limitemunicipio": 1,
+    "conteo.cc_manzana": 42,
+    "conteo.cc_perimetrourbano": 2,
+    "conteo.cc_sectorrural": 2,
+    "conteo.cc_sectorurbano": 2,
+    "conteo.cc_vereda": 21,
+    "conteo.col_miembros": 2931,
+    "conteo.col_rrrfuente": 3377,
+    "conteo.col_uebaunit": 10057,
+    "conteo.col_unidadfuente": 3729,
+    "conteo.extdireccion": 3334,
+    "conteo.lc_agrupacioninteresados": 851,
+    "conteo.lc_calificacionnoconvencional": 666,
+    "conteo.lc_caracteristicasunidadconstruccion": 2314,
+    "conteo.lc_construccion": 3334,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 3306,
+    "conteo.lc_datosphcondominio": 5,
+    "conteo.lc_derecho": 3334,
+    "conteo.lc_fuenteadministrativa": 5659,
+    "conteo.lc_interesado": 4568,
+    "conteo.lc_ofertasmercadoinmobiliario": 43,
+    "conteo.lc_predio": 3334,
+    "conteo.lc_predio_copropiedad": 25,
+    "conteo.lc_terreno": 3042,
+    "conteo.lc_tipologiaconstruccion": 1648,
+    "conteo.lc_unidadconstruccion": 3681
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/tibacuy/tibacuy_lev_cat_v1_2_vigencia2024.xtf",
+    "ili2pg": "exportado",
+    "log_ili2pg": "logs/lote_25/tibacuy/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/tibacuy/validar_ilivalidator.log",
+    "sha256": "c9af6e40d0364eb036481da8b4272e24d779ab6845b65e7ffc8d4d3a67160a41",
+    "bytes": 52882955
+  }
+}

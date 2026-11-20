@@ -112,3 +112,34 @@ Quipile 30; Apulo 2; San Antonio del Tequendama 37 construcciones, 34 unidades, 
 **Memoria**: el equipo tiene 16 GB y ~2,5 GB libres durante la corrida. Para municipios grandes (Facatativá
 41.144 predios, Anapoima, Guaduas, Ubaté, Villeta) definir `JAVA_XMX` en `.env` y correr el lote desde una
 terminal propia (no como tarea en segundo plano de Claude Code, que la detiene si falta memoria).
+
+### Avance del lote (2026-11-20, pausa pedida por el usuario tras Vergara)
+
+Válidos con ilivalidator (11): Chaguaní, Nemocón, Quipile (piloto), Tibacuy, Quebradanegra, Nocaima, Sutatausa,
+Tausa, Tibirita, Vergara. Detalle en `salida/lote_25/resumen_lote.csv`.
+
+Reglas globales agregadas durante el lote (ver `03_...`): linderos con < 2 puntos se excluyen (Nocaima 7);
+áreas MANDATORY nulas → área geométrica / suma de unidades; identificador de construcción > 20 caracteres → id;
+respaldo `ST_ReducePrecision` en `fix` para polígonos que el snap invalida (Nimaima 1 construcción); `fix` atómico;
+triggers/funciones del gestor no se restauran (Sutatausa: 2 triggers de `attr_sync`); ili2pg exporta con
+`--disableValidation` y valida ilivalidator (antes se validaba dos veces).
+
+**Decisiones pendientes del usuario:**
+
+1. **Nimaima — 2 linderos gigantes**: 38.308 puntos / 54,8 km / 204 terrenos y 16.569 puntos / 69,5 km / 498
+   terrenos (en los demás municipios el máximo es 4.944). ili2pg e ilivalidator no terminan de validar la relación
+   `col_puntoCcl` (> 30 min sin avanzar, con 3 GB). Opciones: excluir esos 2 linderos con sus puntos y relaciones
+   (los terrenos quedan) o conservarlos sin poder validar el XTF.
+2. **Zonas homogéneas que no son válidas a 1 mm**: Guatavita 1 ZHG rural (válida en el origen; el redondeo a 1 mm
+   la invalida) y Tocaima 2 ZHF urbanas inválidas ya en el origen + 1 ZHG urbana que el redondeo invalida.
+   `ST_ReducePrecision` las deja válidas con desplazamiento < 1 mm (Guatavita: 0,93 mm, 0,08 m² en 7.327 ha);
+   las inválidas de origen requieren `ST_MakeValid`. Choca con la regla "las ZH no se modifican".
+3. **Derechos sin ninguna fuente administrativa** (posesiones/ocupaciones): Supatá 160, Anapoima 37, Subachoque 1.
+   El modelo exige ≥ 1 fuente por derecho y su dominio tiene `Sin_Documento`. Opción: fuente placeholder tipo
+   `Sin_Documento`, estado `Desconocido`, una por derecho (como el interesado `SIN DATO`).
+
+Sin correr aún: Arbeláez, Fómeque, Villeta, Ubaté, Anolaima, Guaduas, Apulo, San Antonio del Tequendama,
+Facatativá (+ los afectados por las decisiones: Nimaima, Guatavita, Tocaima, Supatá, Anapoima, Subachoque).
+
+Al terminar, re-correr el lote completo desde un commit limpio para que todos los XTF salgan del mismo código
+(los ya válidos deben dar el mismo sha256 salvo que una regla nueva los afecte; el manifiesto lo deja ver).

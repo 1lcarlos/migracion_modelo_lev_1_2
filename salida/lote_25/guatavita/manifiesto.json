@@ -1,0 +1,180 @@
+{
+  "municipio": {
+    "codigo": "25326",
+    "mun": "guatavita",
+    "nombre": "Guatavita",
+    "vigencia": "2024",
+    "actualizacion": "urbana_rural",
+    "prefijo": "GUATAVITA_"
+  },
+  "bd_trabajo": "l25_guatavita",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "scripts/lote.py",
+      "salida/lote_25/guatavita/",
+      "salida/lote_25/nimaima/",
+      "salida/lote_25/nocaima/",
+      "salida/lote_25/quebradanegra/",
+      "salida/lote_25/tibacuy/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "62c2a16b710ebf8d351c646b9303ec169cc370f13dcbf9762b7ab046769de3be",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "e9e59018e8d00d72e0195d14e9dead27fb7375edb40c907f3f37cf58304e71d0",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T13:38:16",
+      "estado": "ok",
+      "fin": "2026-11-20T13:38:28",
+      "segundos": 11.8
+    },
+    "preparar": {
+      "inicio": "2026-11-20T13:38:28",
+      "estado": "ok",
+      "fin": "2026-11-20T13:38:39",
+      "segundos": 11.2
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T13:38:39",
+      "estado": "ok",
+      "fin": "2026-11-20T13:38:39",
+      "segundos": 0.0
+    },
+    "dominios": {
+      "inicio": "2026-11-20T13:38:39",
+      "estado": "ok",
+      "fin": "2026-11-20T13:38:40",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T13:39:46",
+      "estado": "ok",
+      "fin": "2026-11-20T13:40:08",
+      "segundos": 22.0
+    },
+    "fix": {
+      "inicio": "2026-11-20T13:40:08",
+      "estado": "ok",
+      "fin": "2026-11-20T13:40:10",
+      "segundos": 1.7
+    },
+    "verificar": {
+      "inicio": "2026-11-20T13:40:10",
+      "estado": "ok",
+      "fin": "2026-11-20T13:40:10",
+      "segundos": 0.4
+    },
+    "exportar": {
+      "inicio": "2026-11-20T13:40:10",
+      "estado": "ok",
+      "fin": "2026-11-20T13:40:33",
+      "segundos": 22.4
+    },
+    "validar": {
+      "inicio": "2026-11-20T13:40:33",
+      "estado": "fallida",
+      "fin": "2026-11-20T13:41:03",
+      "segundos": 30.6,
+      "error": "ilivalidator: 1 errores. Error: ISO19107_PLANAS_V3_0.GM_Surface3DListValue.value: Intersection coord1 (4903772,562, 2107550,691), tids 64da310e-c8af-d792-c8bc-80f92847fc3f, 64da310e-c8af-d792-c8bc-80f92847fc3f"
+    }
+  },
+  "estado": "fallida en validar",
+  "fuente": {
+    "bd": "acc_2024",
+    "esquema": "cun25326",
+    "dump": "insumos/lote_25/guatavita_acc_2024_cun25326.dump",
+    "dump_sha256": "80793aed952a6fd65725a2bd34b2162c5ff0fc410b1f97a82660f0fdc9dbf131",
+    "dump_fecha": "2026-11-20T13:38:28"
+  },
+  "metricas": {
+    "avaluo_origen": 997735701000.0,
+    "avaluo_destino": 997735701000.0,
+    "predios_con_avaluo_vigencia": 4341,
+    "predios_migrados": 4341,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 2,
+    "copropiedad_destino": 2,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 4344,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 131,
+    "copropiedad_matrices_coef_distinto_1": 1,
+    "interesados_origen_total": 5047,
+    "interesados_sin_derecho_migrado_excluidos": 3,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 7,
+    "imputado_comienzo_vida_util": 34,
+    "imputado_area_construida": 12,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 12,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "excluido_linderos_menos_2_puntos": 0,
+    "vigencia_zhf_rural": 2024,
+    "vigencia_zhf_urbana": 2024,
+    "vigencia_zhg_rural": 2024,
+    "vigencia_zhg_urbana": 2024,
+    "conteo.av_tipologiaconstruccion": 24,
+    "conteo.av_zonahomogeneafisicarural": 178,
+    "conteo.av_zonahomogeneafisicaurbana": 114,
+    "conteo.av_zonahomogeneageoeconomicarural": 7,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 18,
+    "conteo.cc_limitemunicipio": 1,
+    "conteo.cc_manzana": 77,
+    "conteo.cc_nomenclaturavial": 32,
+    "conteo.cc_perimetrourbano": 1,
+    "conteo.cc_sectorrural": 1,
+    "conteo.cc_sectorurbano": 1,
+    "conteo.cc_vereda": 12,
+    "conteo.col_miembros": 3356,
+    "conteo.col_rrrfuente": 4619,
+    "conteo.col_uebaunit": 16175,
+    "conteo.col_unidadfuente": 5056,
+    "conteo.extdireccion": 4341,
+    "conteo.lc_agrupacioninteresados": 1120,
+    "conteo.lc_calificacionnoconvencional": 795,
+    "conteo.lc_caracteristicasunidadconstruccion": 3327,
+    "conteo.lc_construccion": 5468,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 4315,
+    "conteo.lc_datosphcondominio": 62,
+    "conteo.lc_derecho": 4341,
+    "conteo.lc_fuenteadministrativa": 9639,
+    "conteo.lc_interesado": 5044,
+    "conteo.lc_ofertasmercadoinmobiliario": 43,
+    "conteo.lc_predio": 4341,
+    "conteo.lc_predio_copropiedad": 2,
+    "conteo.lc_terreno": 4183,
+    "conteo.lc_tipologiaconstruccion": 2532,
+    "conteo.lc_unidadconstruccion": 6526
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/guatavita/guatavita_lev_cat_v1_2_vigencia2024.xtf",
+    "ili2pg": "exportado",
+    "log_ili2pg": "logs/lote_25/guatavita/exportar_ili2pg.log",
+    "ilivalidator": "invalido",
+    "ilivalidator_errores": 1,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/guatavita/validar_ilivalidator.log"
+  }
+}

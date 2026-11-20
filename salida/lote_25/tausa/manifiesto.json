@@ -1,0 +1,203 @@
+{
+  "municipio": {
+    "codigo": "25793",
+    "mun": "tausa",
+    "nombre": "Tausa",
+    "vigencia": "2023",
+    "actualizacion": "urbana_rural",
+    "prefijo": "TAUSA_"
+  },
+  "bd_trabajo": "l25_tausa",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "scripts/lote.py",
+      "salida/lote_25/guatavita/",
+      "salida/lote_25/nimaima/",
+      "salida/lote_25/nocaima/",
+      "salida/lote_25/quebradanegra/",
+      "salida/lote_25/supata/",
+      "salida/lote_25/sutatausa/",
+      "salida/lote_25/tibacuy/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "62c2a16b710ebf8d351c646b9303ec169cc370f13dcbf9762b7ab046769de3be",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "e9e59018e8d00d72e0195d14e9dead27fb7375edb40c907f3f37cf58304e71d0",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T13:49:22",
+      "estado": "ok",
+      "fin": "2026-11-20T13:49:36",
+      "segundos": 14.6
+    },
+    "preparar": {
+      "inicio": "2026-11-20T13:49:36",
+      "estado": "ok",
+      "fin": "2026-11-20T13:49:49",
+      "segundos": 13.0
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T13:49:49",
+      "estado": "ok",
+      "fin": "2026-11-20T13:49:49",
+      "segundos": 0.1
+    },
+    "dominios": {
+      "inicio": "2026-11-20T13:49:49",
+      "estado": "ok",
+      "fin": "2026-11-20T13:49:50",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T13:49:50",
+      "estado": "ok",
+      "fin": "2026-11-20T13:50:55",
+      "segundos": 65.3
+    },
+    "fix": {
+      "inicio": "2026-11-20T13:50:55",
+      "estado": "ok",
+      "fin": "2026-11-20T13:51:07",
+      "segundos": 11.6
+    },
+    "verificar": {
+      "inicio": "2026-11-20T13:51:07",
+      "estado": "ok",
+      "fin": "2026-11-20T13:51:08",
+      "segundos": 0.8
+    },
+    "exportar": {
+      "inicio": "2026-11-20T13:51:08",
+      "estado": "ok",
+      "fin": "2026-11-20T13:53:40",
+      "segundos": 152.9
+    },
+    "validar": {
+      "inicio": "2026-11-20T13:53:40",
+      "estado": "ok",
+      "fin": "2026-11-20T13:55:20",
+      "segundos": 99.9
+    }
+  },
+  "estado": "completo",
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25793",
+    "dump": "insumos/lote_25/tausa_acc_mayo_2023_cun25793.dump",
+    "dump_sha256": "53e66236ff7f830a4a99e7464aa595b5f124e30ec8fafbb92e15bf662dec1c6d",
+    "dump_fecha": "2026-11-20T13:49:36",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 55,
+      "sha256": {
+        "insumos/lote_25/tausa_acc_2024_tb_valortipologia.tsv": "b2a46f476062ed7a7f2bcf8025c25bff66768907f75dd2cdc26185c8c7aa1d2b",
+        "insumos/lote_25/tausa_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    },
+    "objetos_no_restaurados": []
+  },
+  "metricas": {
+    "avaluo_origen": 711017173200.0,
+    "avaluo_destino": 711017173200.0,
+    "predios_con_avaluo_vigencia": 4793,
+    "predios_migrados": 4793,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 2,
+    "copropiedad_destino": 2,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 4793,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 0,
+    "copropiedad_matrices_coef_distinto_1": 0,
+    "interesados_origen_total": 5322,
+    "interesados_sin_derecho_migrado_excluidos": 1,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
+    "imputado_area_construida": 0,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "excluido_linderos_menos_2_puntos": 0,
+    "vigencia_zhf_rural": 2023,
+    "vigencia_zhf_urbana": 2023,
+    "vigencia_zhg_rural": 2023,
+    "vigencia_zhg_urbana": 2023,
+    "conteo.av_tipologiaconstruccion": 19,
+    "conteo.av_zonahomogeneafisicarural": 348,
+    "conteo.av_zonahomogeneageoeconomicarural": 8,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 13,
+    "conteo.cc_limitemunicipio": 1,
+    "conteo.cc_manzana": 32,
+    "conteo.cc_perimetrourbano": 2,
+    "conteo.cc_sectorrural": 1,
+    "conteo.cc_sectorurbano": 1,
+    "conteo.cc_vereda": 11,
+    "conteo.col_baunitfuente": 530,
+    "conteo.col_masccl": 27041,
+    "conteo.col_menosccl": 1344,
+    "conteo.col_miembros": 3891,
+    "conteo.col_puntoccl": 104610,
+    "conteo.col_rrrfuente": 5479,
+    "conteo.col_uebaunit": 18623,
+    "conteo.col_unidadfuente": 4991,
+    "conteo.extarchivo": 1051,
+    "conteo.extdireccion": 4802,
+    "conteo.extreferenciaregistralsistemaantiguo": 290,
+    "conteo.lc_agrupacioninteresados": 1286,
+    "conteo.lc_calificacionnoconvencional": 2815,
+    "conteo.lc_caracteristicasunidadconstruccion": 7503,
+    "conteo.lc_construccion": 5495,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 4793,
+    "conteo.lc_datosphcondominio": 1,
+    "conteo.lc_derecho": 4793,
+    "conteo.lc_fuenteadministrativa": 10470,
+    "conteo.lc_fuenteespacial": 530,
+    "conteo.lc_interesado": 5321,
+    "conteo.lc_lindero": 14120,
+    "conteo.lc_ofertasmercadoinmobiliario": 19,
+    "conteo.lc_predio": 4793,
+    "conteo.lc_predio_copropiedad": 2,
+    "conteo.lc_predio_informalidad": 340,
+    "conteo.lc_puntolevantamiento": 39274,
+    "conteo.lc_puntolindero": 85815,
+    "conteo.lc_servidumbretransito": 5,
+    "conteo.lc_terreno": 4791,
+    "conteo.lc_tipologiaconstruccion": 4688,
+    "conteo.lc_unidadconstruccion": 8156
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/tausa/tausa_lev_cat_v1_2_vigencia2023.xtf",
+    "ili2pg": "exportado",
+    "log_ili2pg": "logs/lote_25/tausa/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/tausa/validar_ilivalidator.log",
+    "sha256": "e5b77d0867a356e977310e9092799feb168dce2b3291369661974dc44ebb2d71",
+    "bytes": 231362262
+  }
+}

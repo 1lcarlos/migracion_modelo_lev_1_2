@@ -3,24 +3,24 @@
 25168;Chaguaní;2023;urbana_rural;acc_mayo_2023.cun25168;completo;2718;291067399000.0;True;18;0;0;0;13;valido;valido;28004daf5884fd6cd5e434aba14895288456591105cdfbbd6f93f61234b59e9c;7cc7ca4ccc
 25279;Fómeque;2023;urbana;acc_mayo_2023.cun25279;sin_correr;;;;;;;;;;;;
 25486;Nemocón;2023;urbana;acc_mayo_2023.cun25486;completo;5983;598625016000.0;True;527;0;1;6;14;valido;valido;36f40b570a54ccd24f438d00e568b91b7d4b3ca8c224c68b8306290617d9043c;7cc7ca4ccc
-25489;Nimaima;2023;urbana_rural;acc_mayo_2023.cun25489;sin_correr;;;;;;;;;;;;
-25491;Nocaima;2023;urbana_rural;acc_mayo_2023.cun25491;sin_correr;;;;;;;;;;;;
-25592;Quebradanegra;2023;urbana_rural;acc_mayo_2023.cun25592;sin_correr;;;;;;;;;;;;
-25777;Supatá;2023;urbana_rural;acc_mayo_2023.cun25777;sin_correr;;;;;;;;;;;;
-25781;Sutatausa;2023;urbana_rural;acc_mayo_2023.cun25781;sin_correr;;;;;;;;;;;;
-25793;Tausa;2023;urbana_rural;acc_mayo_2023.cun25793;sin_correr;;;;;;;;;;;;
+25489;Nimaima;2023;urbana_rural;acc_mayo_2023.cun25489;fallida en exportar;2803;456522978000.0;True;7;0;0;2;17;invalido;;;92632d6d09
+25491;Nocaima;2023;urbana_rural;acc_mayo_2023.cun25491;completo;4193;869998342917.0;True;62;1;0;2;14;exportado;valido;ee3507e3cb75159b59149b49d7b18c2e06e8025024a3f96f4f0bda3a1d9e6b03;92632d6d09
+25592;Quebradanegra;2023;urbana_rural;acc_mayo_2023.cun25592;completo;3491;457432740085.0;True;0;0;0;5;20;exportado;valido;86da52e47ef830c6c4c4e49b6e037023a6badc949ca0cec1b2f85def1ad28f81;92632d6d09
+25777;Supatá;2023;urbana_rural;acc_mayo_2023.cun25777;fallida en fix;;;;;;;;;;;;92632d6d09
+25781;Sutatausa;2023;urbana_rural;acc_mayo_2023.cun25781;completo;4307;383091973000.0;True;3;0;0;0;21;exportado;valido;2955f659d7c5d3a4daa5089fa1d77ba65537fa54709cfd241267d79dfb5fa2a6;92632d6d09
+25793;Tausa;2023;urbana_rural;acc_mayo_2023.cun25793;completo;4793;711017173200.0;True;0;1;0;0;19;exportado;valido;e5b77d0867a356e977310e9092799feb168dce2b3291369661974dc44ebb2d71;92632d6d09
 25843;Villa de San Diego de Ubaté;2023;urbana_rural;acc_mayo_2023.cun25843;sin_correr;;;;;;;;;;;;
-25862;Vergara;2023;urbana_rural;acc_mayo_2023.cun25862;sin_correr;;;;;;;;;;;;
+25862;Vergara;2023;urbana_rural;acc_mayo_2023.cun25862;completo;6123;513820120000.0;True;85;0;0;0;15;exportado;valido;6e24929934a37db455fe5cdb653e786ed39dc5900bde8936bf36b6411d49fd81;92632d6d09
 25875;Villeta;2023;urbana_rural;acc_mayo_2023.cun25875;sin_correr;;;;;;;;;;;;
 25035;Anapoima;2024;urbana_rural;acc_2024.cun25035;sin_correr;;;;;;;;;;;;
 25040;Anolaima;2024;urbana_rural;acc_2024.cun25040;sin_correr;;;;;;;;;;;;
 25269;Facatativá;2024;urbana_rural;acc_2024.cun25269;sin_correr;;;;;;;;;;;;
 25320;Guaduas;2024;urbana_rural;acc_2024.cun25320;sin_correr;;;;;;;;;;;;
-25326;Guatavita;2024;urbana_rural;acc_2024.cun25326;sin_correr;;;;;;;;;;;;
+25326;Guatavita;2024;urbana_rural;acc_2024.cun25326;fallida en validar;4341;997735701000.0;True;131;3;0;1;24;exportado;invalido;;92632d6d09
 25596;Quipile;2024;urbana_rural;acc_2024.cun25596;completo;4632;411517087000.0;True;157;0;0;0;25;valido;valido;7a209551888cea7488cc812769e664ce7cb959a0815606be02b34d0f2c495de8;830aff751f
 25599;Apulo;2024;urbana_rural;acc_2024.cun25599;sin_correr;;;;;;;;;;;;
 25645;San Antonio del Tequendama;2024;urbana_rural;acc_2024.cun25645;sin_correr;;;;;;;;;;;;
 25769;Subachoque;2024;urbana_rural;acc_2024.cun25769;sin_correr;;;;;;;;;;;;
-25805;Tibacuy;2024;urbana_rural;acc_2024.cun25805;sin_correr;;;;;;;;;;;;
-25807;Tibirita;2024;urbana_rural;acc_2024.cun25807;sin_correr;;;;;;;;;;;;
+25805;Tibacuy;2024;urbana_rural;acc_2024.cun25805;completo;3334;389063655000.0;True;277;5;0;0;25;exportado;valido;c9af6e40d0364eb036481da8b4272e24d779ab6845b65e7ffc8d4d3a67160a41;92632d6d09
+25807;Tibirita;2024;urbana_rural;acc_2024.cun25807;completo;5134;325077199000.0;True;108;0;0;0;24;exportado;valido;d032b2151b68ff089d1f7a1fa72eb688e799861a3e4149ec79858fb4fb78d632;92632d6d09
 25815;Tocaima;2024;urbana_rural;acc_2024.cun25815;sin_correr;;;;;;;;;;;;

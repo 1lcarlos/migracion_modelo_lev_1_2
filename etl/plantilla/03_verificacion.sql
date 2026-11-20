@@ -95,6 +95,13 @@ UNION ALL SELECT 'imputado_comienzo_vida_util',
       WHERE d.t_id < 1000000000 AND s.comienzo_vida_util_version IS NULL)
   + (SELECT count(*) FROM lev_cat_12.lc_derecho d JOIN :"esq".gc_derecho s ON s.id = d.t_id - 1100000000
       WHERE d.t_id < 1200000000 AND s.comienzo_vida_util_version IS NULL)
+UNION ALL SELECT 'imputado_area_construida',
+    (SELECT count(*) FROM lev_cat_12.lc_construccion d JOIN :"esq".gc_construccion s ON s.id = d.t_id - 400000000
+      WHERE d.t_id < 500000000 AND s.area IS NULL)
+  + (SELECT count(*) FROM lev_cat_12.lc_unidadconstruccion d JOIN :"esq".gc_unidadconstruccion s ON s.id = d.t_id - 500000000
+      WHERE d.t_id < 600000000 AND s.area IS NULL)
+  + (SELECT count(*) FROM lev_cat_12.lc_caracteristicasunidadconstruccion d JOIN :"esq".gc_caracteristicasunidadconstruccion s
+      ON s.id = d.t_id - 600000000 WHERE d.t_id < 700000000 AND s.area IS NULL)
 UNION ALL SELECT 'imputado_area_terreno_geometrica', count(*) FROM lev_cat_12.lc_terreno t
   JOIN :"esq".gc_terreno s ON s.id = t.t_id - 300000000
   WHERE t.t_id < 400000000 AND s.area IS NULL
@@ -107,6 +114,9 @@ UNION ALL SELECT 'excluido_nomenclatura_sin_tipo_o_numero',
   - (SELECT count(*) FROM lev_cat_12.cc_nomenclaturavial WHERE t_id >= 2900000000 AND t_id < 3000000000)
 UNION ALL SELECT 'excluido_linderos_sin_ue_migrada',
   (SELECT count(*) FROM :"esq".gc_lindero) - (SELECT count(*) FROM lev_cat_12.lc_lindero WHERE t_id < 3500000000)
+UNION ALL SELECT 'excluido_linderos_menos_2_puntos', count(*) FROM :"esq".gc_lindero l
+  WHERE (SELECT count(*) FROM :"esq".col_puntoccl c WHERE c.ccl = l.id
+         AND (c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL)) < 2
 UNION ALL SELECT 'vigencia_zhf_rural', :vig_zhf_rural
 UNION ALL SELECT 'vigencia_zhf_urbana', :vig_zhf_urbana
 UNION ALL SELECT 'vigencia_zhg_rural', :vig_zhg_rural

@@ -1,0 +1,199 @@
+{
+  "municipio": {
+    "codigo": "25491",
+    "mun": "nocaima",
+    "nombre": "Nocaima",
+    "vigencia": "2023",
+    "actualizacion": "urbana_rural",
+    "prefijo": "NOCAIMA_"
+  },
+  "bd_trabajo": "l25_nocaima",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "scripts/lote.py",
+      "salida/lote_25/nimaima/",
+      "salida/lote_25/nocaima/",
+      "salida/lote_25/quebradanegra/",
+      "salida/lote_25/tibacuy/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "24bf3d3df0dd86277304b1a3b04456ea866ffdc99e4c9f3ab5ae9ddc2c6c570f",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "637778820b0188f37370f3b630488f7cfc724fdbcbb873ea00bb48972b793cb8",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T13:24:27",
+      "estado": "ok",
+      "fin": "2026-11-20T13:24:42",
+      "segundos": 15.8
+    },
+    "preparar": {
+      "inicio": "2026-11-20T13:24:42",
+      "estado": "ok",
+      "fin": "2026-11-20T13:24:56",
+      "segundos": 13.8
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T13:24:56",
+      "estado": "ok",
+      "fin": "2026-11-20T13:24:56",
+      "segundos": 0.1
+    },
+    "dominios": {
+      "inicio": "2026-11-20T13:24:56",
+      "estado": "ok",
+      "fin": "2026-11-20T13:24:57",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T13:31:52",
+      "estado": "ok",
+      "fin": "2026-11-20T13:33:00",
+      "segundos": 68.7
+    },
+    "fix": {
+      "inicio": "2026-11-20T13:33:00",
+      "estado": "ok",
+      "fin": "2026-11-20T13:33:12",
+      "segundos": 12.1
+    },
+    "verificar": {
+      "inicio": "2026-11-20T13:33:12",
+      "estado": "ok",
+      "fin": "2026-11-20T13:33:13",
+      "segundos": 0.6
+    },
+    "exportar": {
+      "inicio": "2026-11-20T13:33:13",
+      "estado": "ok",
+      "fin": "2026-11-20T13:35:37",
+      "segundos": 143.5
+    },
+    "validar": {
+      "inicio": "2026-11-20T13:35:37",
+      "estado": "ok",
+      "fin": "2026-11-20T13:37:56",
+      "segundos": 139.4
+    }
+  },
+  "estado": "completo",
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25491",
+    "dump": "insumos/lote_25/nocaima_acc_mayo_2023_cun25491.dump",
+    "dump_sha256": "be125e25de5eda6d6fe1c9ef0f53cbb5e97bdd66c9ae7242d26e59c69bc83dd3",
+    "dump_fecha": "2026-11-20T13:24:42",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 63,
+      "sha256": {
+        "insumos/lote_25/nocaima_acc_2024_tb_valortipologia.tsv": "f6dc1563f2e91206f8cd964ff9dfe0fcac03125bb3ee4de5658a38d42d4ad42b",
+        "insumos/lote_25/nocaima_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    }
+  },
+  "metricas": {
+    "avaluo_origen": 869998342917.0,
+    "avaluo_destino": 869998342917.0,
+    "predios_con_avaluo_vigencia": 4193,
+    "predios_migrados": 4193,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 223,
+    "copropiedad_destino": 223,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 4194,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 62,
+    "copropiedad_matrices_coef_distinto_1": 2,
+    "interesados_origen_total": 4515,
+    "interesados_sin_derecho_migrado_excluidos": 1,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 7,
+    "excluido_linderos_menos_2_puntos": 7,
+    "vigencia_zhf_rural": 2023,
+    "vigencia_zhf_urbana": 2023,
+    "vigencia_zhg_rural": 2023,
+    "vigencia_zhg_urbana": 2023,
+    "conteo.av_tipologiaconstruccion": 14,
+    "conteo.av_zonahomogeneafisicarural": 277,
+    "conteo.av_zonahomogeneafisicaurbana": 53,
+    "conteo.av_zonahomogeneageoeconomicarural": 12,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 19,
+    "conteo.cc_limitemunicipio": 2,
+    "conteo.cc_manzana": 34,
+    "conteo.cc_perimetrourbano": 2,
+    "conteo.cc_sectorrural": 4,
+    "conteo.cc_sectorurbano": 2,
+    "conteo.cc_vereda": 22,
+    "conteo.col_baunitfuente": 7416,
+    "conteo.col_masccl": 22496,
+    "conteo.col_menosccl": 110,
+    "conteo.col_miembros": 4062,
+    "conteo.col_puntoccl": 96776,
+    "conteo.col_rrrfuente": 5118,
+    "conteo.col_uebaunit": 17604,
+    "conteo.col_unidadfuente": 4158,
+    "conteo.extarchivo": 8322,
+    "conteo.extdireccion": 4606,
+    "conteo.extreferenciaregistralsistemaantiguo": 162,
+    "conteo.lc_agrupacioninteresados": 1171,
+    "conteo.lc_calificacionnoconvencional": 3546,
+    "conteo.lc_caracteristicasunidadconstruccion": 7765,
+    "conteo.lc_construccion": 5387,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 4193,
+    "conteo.lc_datosphcondominio": 11,
+    "conteo.lc_derecho": 4193,
+    "conteo.lc_fuenteadministrativa": 9276,
+    "conteo.lc_fuenteespacial": 7416,
+    "conteo.lc_interesado": 4514,
+    "conteo.lc_lindero": 11737,
+    "conteo.lc_ofertasmercadoinmobiliario": 42,
+    "conteo.lc_predio": 4193,
+    "conteo.lc_predio_copropiedad": 223,
+    "conteo.lc_predio_informalidad": 465,
+    "conteo.lc_puntolevantamiento": 65491,
+    "conteo.lc_puntolindero": 81066,
+    "conteo.lc_servidumbretransito": 9,
+    "conteo.lc_terreno": 3987,
+    "conteo.lc_tipologiaconstruccion": 4219,
+    "conteo.lc_unidadconstruccion": 8196
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/nocaima/nocaima_lev_cat_v1_2_vigencia2023.xtf",
+    "ili2pg": "exportado",
+    "log_ili2pg": "logs/lote_25/nocaima/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/nocaima/validar_ilivalidator.log",
+    "sha256": "ee3507e3cb75159b59149b49d7b18c2e06e8025024a3f96f4f0bda3a1d9e6b03",
+    "bytes": 242128945
+  }
+}

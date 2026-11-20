@@ -1,0 +1,184 @@
+{
+  "municipio": {
+    "codigo": "25489",
+    "mun": "nimaima",
+    "nombre": "Nimaima",
+    "vigencia": "2023",
+    "actualizacion": "urbana_rural",
+    "prefijo": "NIMAIMA_"
+  },
+  "bd_trabajo": "l25_nimaima",
+  "codigo": {
+    "git_commit": "92632d6d099d7c6a07a1c087b2d5fb2daeb97c7c",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "ocs/03_decisiones_y_lecciones.md",
+      "etl/plantilla/02_fix_validacion.sql",
+      "salida/lote_25/resumen_lote.csv",
+      "salida/lote_25/nimaima/"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "4338d4f6042358cd3d345be52b4f502f3e87df3238e2d3967d4658a76f7aa031",
+      "etl/plantilla/02_fix_validacion.sql": "aa71e058e5653371ec2510fd91aa2466c283977920703f0c2da1dc2f99a40452",
+      "etl/plantilla/03_verificacion.sql": "7719f67f3a8c07ab8935aaebf63149c24511cde50f23a1c2fcdcea3d41489792",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T12:18:14",
+      "estado": "ok",
+      "fin": "2026-11-20T12:18:32",
+      "segundos": 17.2
+    },
+    "preparar": {
+      "inicio": "2026-11-20T12:18:32",
+      "estado": "ok",
+      "fin": "2026-11-20T12:18:44",
+      "segundos": 12.3
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T12:18:44",
+      "estado": "ok",
+      "fin": "2026-11-20T12:18:44",
+      "segundos": 0.1
+    },
+    "dominios": {
+      "inicio": "2026-11-20T12:18:44",
+      "estado": "ok",
+      "fin": "2026-11-20T12:18:44",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T12:31:25",
+      "estado": "ok",
+      "fin": "2026-11-20T12:32:39",
+      "segundos": 74.0
+    },
+    "fix": {
+      "inicio": "2026-11-20T12:32:39",
+      "estado": "ok",
+      "fin": "2026-11-20T12:32:46",
+      "segundos": 7.9
+    },
+    "verificar": {
+      "inicio": "2026-11-20T12:32:46",
+      "estado": "ok",
+      "fin": "2026-11-20T12:32:47",
+      "segundos": 0.5
+    },
+    "exportar": {
+      "inicio": "2026-11-20T12:32:50",
+      "estado": "fallida",
+      "fin": "2026-11-20T13:04:59",
+      "segundos": 1929.1,
+      "error": "ili2pg: XTF inválido. "
+    },
+    "validar": {
+      "estado": "pendiente"
+    }
+  },
+  "estado": "fallida en exportar",
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25489",
+    "dump": "insumos/lote_25/nimaima_acc_mayo_2023_cun25489.dump",
+    "dump_sha256": "b86ab80a9db534486c707b53f68c2ffd47d3f3cbd4c0cce4ab021b6f86ce64d1",
+    "dump_fecha": "2026-11-20T12:18:31",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 54,
+      "sha256": {
+        "insumos/lote_25/nimaima_acc_2024_tb_valortipologia.tsv": "eb3920c50eaee356b9391fb5846b3453d6f6042f619251c19cf1da243267efcb",
+        "insumos/lote_25/nimaima_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    }
+  },
+  "metricas": {
+    "avaluo_origen": 456522978000.0,
+    "avaluo_destino": 456522978000.0,
+    "predios_con_avaluo_vigencia": 2803,
+    "predios_migrados": 2803,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 96,
+    "copropiedad_destino": 96,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 2803,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 7,
+    "copropiedad_matrices_coef_distinto_1": 2,
+    "interesados_origen_total": 3008,
+    "interesados_sin_derecho_migrado_excluidos": 0,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "vigencia_zhf_rural": 2023,
+    "vigencia_zhf_urbana": 2023,
+    "vigencia_zhg_rural": 2023,
+    "vigencia_zhg_urbana": 2023,
+    "conteo.av_tipologiaconstruccion": 17,
+    "conteo.av_zonahomogeneafisicarural": 504,
+    "conteo.av_zonahomogeneafisicaurbana": 29,
+    "conteo.av_zonahomogeneageoeconomicarural": 13,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 12,
+    "conteo.cc_limitemunicipio": 2,
+    "conteo.cc_manzana": 35,
+    "conteo.cc_perimetrourbano": 2,
+    "conteo.cc_sectorrural": 3,
+    "conteo.cc_sectorurbano": 2,
+    "conteo.cc_vereda": 12,
+    "conteo.col_baunitfuente": 4977,
+    "conteo.col_masccl": 18788,
+    "conteo.col_menosccl": 353,
+    "conteo.col_miembros": 1993,
+    "conteo.col_puntoccl": 204820,
+    "conteo.col_rrrfuente": 3250,
+    "conteo.col_uebaunit": 10366,
+    "conteo.col_unidadfuente": 2675,
+    "conteo.extarchivo": 5248,
+    "conteo.extdireccion": 2943,
+    "conteo.extreferenciaregistralsistemaantiguo": 371,
+    "conteo.lc_agrupacioninteresados": 646,
+    "conteo.lc_calificacionnoconvencional": 1985,
+    "conteo.lc_caracteristicasunidadconstruccion": 4377,
+    "conteo.lc_construccion": 3035,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 2803,
+    "conteo.lc_datosphcondominio": 7,
+    "conteo.lc_derecho": 2803,
+    "conteo.lc_fuenteadministrativa": 5792,
+    "conteo.lc_fuenteespacial": 4977,
+    "conteo.lc_interesado": 3008,
+    "conteo.lc_lindero": 2862,
+    "conteo.lc_ofertasmercadoinmobiliario": 29,
+    "conteo.lc_predio": 2803,
+    "conteo.lc_predio_copropiedad": 96,
+    "conteo.lc_predio_informalidad": 281,
+    "conteo.lc_puntolevantamiento": 26809,
+    "conteo.lc_puntolindero": 102020,
+    "conteo.lc_servidumbretransito": 1,
+    "conteo.lc_terreno": 2782,
+    "conteo.lc_tipologiaconstruccion": 2392,
+    "conteo.lc_unidadconstruccion": 4548
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/nimaima/nimaima_lev_cat_v1_2_vigencia2023.xtf",
+    "ili2pg": "invalido",
+    "log_ili2pg": "logs/lote_25/nimaima/exportar_ili2pg.log"
+  }
+}
