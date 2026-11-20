@@ -9,6 +9,7 @@ al modelo LADM-COL Levantamiento Catastral v1.2, con salida a XTF validado por i
 | [02_runbook_migracion.md](02_runbook_migracion.md) | Paso a paso reproducible para migrar un municipio nuevo | Al iniciar la migración de otro municipio |
 | [03_decisiones_y_lecciones.md](03_decisiones_y_lecciones.md) | Decisiones sobre datos, catálogo de errores y sus soluciones | Cuando la validación falle o haya dudas de mapeo |
 | [04_propuesta_herramienta_seguimiento.md](04_propuesta_herramienta_seguimiento.md) | Propuesta de herramienta/dashboard de seguimiento de migraciones | Para planear el desarrollo de la herramienta |
+| [05_lote_25_municipios.md](05_lote_25_municipios.md) | Lote de 25 municipios (2023/2024): universo, fuentes, decisiones, `scripts/lote.py` | **Proceso vigente** para migrar desde las BD de corte |
 
 ## Estado al 2026-10-02
 

@@ -10,6 +10,8 @@
 #   operador: solo si además COMPLEMENTO_OPERADOR=si (linderos, puntos, fuentes espaciales, ZHF urbanas y
 #             tipologías del XTF de referencia)
 # Requiere .env en la raíz (ver .env.example).
+# NOTA: para el lote de 25 municipios usar scripts/lote.py (extracción desde BD de corte, controles
+# que abortan, ilivalidator y manifiesto). Este script queda para las migraciones con XTF del operador.
 # ============================================================
 set -euo pipefail
 
@@ -84,8 +86,8 @@ etapa_auxiliar() {
   rm -f "logs/aux_${MUN}.sql"
 }
 
-etapa_dominios()  { echo "== [dominios]";  psql_bd -f etl/plantilla/00_check_dominios.sql; }
-etapa_etl()       { echo "== [etl]";       psql_bd -f etl/plantilla/01_migracion.sql; }
+etapa_dominios()  { echo "== [dominios]";  psql_bd -q -f etl/plantilla/00_homologaciones.sql; psql_bd -f etl/plantilla/00_check_dominios.sql; }
+etapa_etl()       { echo "== [etl]";       psql_bd -q -f etl/plantilla/00_homologaciones.sql; psql_bd -f etl/plantilla/01_migracion.sql; }
 etapa_complemento() {
   if [[ -z "${XTF_COMPLEMENTO:-}" ]]; then echo "== [complemento] sin XTF_COMPLEMENTO: se omite"; return; fi
   local dir="logs/ref_xtf_${MUN}"

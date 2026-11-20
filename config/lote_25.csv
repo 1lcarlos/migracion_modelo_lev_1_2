@@ -1,0 +1,26 @@
+codigo;mun;nombre;vigencia;actualizacion;bd_fuente;prefijo;bd_tipologia;zh_ultima_vigencia;razon_municipio;nit_municipio;piloto
+25053;arbelaez;Arbeláez;2023;urbana;acc_mayo_2023;ARBELAEZ_;acc_2024;si;;;
+25168;chaguani;Chaguaní;2023;urbana_rural;acc_mayo_2023;CHAGUANI_;acc_2024;no;;;si
+25279;fomeque;Fómeque;2023;urbana;acc_mayo_2023;FOMEQUE_;acc_2024;si;;;
+25486;nemocon;Nemocón;2023;urbana;acc_mayo_2023;NEMOCON_;acc_2024;si;;;si
+25489;nimaima;Nimaima;2023;urbana_rural;acc_mayo_2023;NIMAIMA_;acc_2024;no;;;
+25491;nocaima;Nocaima;2023;urbana_rural;acc_mayo_2023;NOCAIMA_;acc_2024;no;;;
+25592;quebradanegra;Quebradanegra;2023;urbana_rural;acc_mayo_2023;QUEBRADANEGRA_;acc_2024;no;;;
+25777;supata;Supatá;2023;urbana_rural;acc_mayo_2023;SUPATA_;acc_2024;no;;;
+25781;sutatausa;Sutatausa;2023;urbana_rural;acc_mayo_2023;SUTATAUSA_;acc_2024;no;;;
+25793;tausa;Tausa;2023;urbana_rural;acc_mayo_2023;TAUSA_;acc_2024;no;;;
+25843;ubate;Villa de San Diego de Ubaté;2023;urbana_rural;acc_mayo_2023;UBATE_;acc_2024;no;;;
+25862;vergara;Vergara;2023;urbana_rural;acc_mayo_2023;VERGARA_;acc_2024;no;;;
+25875;villeta;Villeta;2023;urbana_rural;acc_mayo_2023;VILLETA_;acc_2024;no;;;
+25035;anapoima;Anapoima;2024;urbana_rural;acc_2024;ANAPOIMA_;;no;;;
+25040;anolaima;Anolaima;2024;urbana_rural;acc_2024;ANOLAIMA_;;no;;;
+25269;facatativa;Facatativá;2024;urbana_rural;acc_2024;FACATATIVA_;;no;;;
+25320;guaduas;Guaduas;2024;urbana_rural;acc_2024;GUADUAS_;;no;;;
+25326;guatavita;Guatavita;2024;urbana_rural;acc_2024;GUATAVITA_;;no;;;
+25596;quipile;Quipile;2024;urbana_rural;acc_2024;QUIPILE_;;no;;;si
+25599;apulo;Apulo;2024;urbana_rural;acc_2024;APULO_;;no;;;
+25645;san_antonio_tequendama;San Antonio del Tequendama;2024;urbana_rural;acc_2024;SAN_ANTONIO_;;no;;;
+25769;subachoque;Subachoque;2024;urbana_rural;acc_2024;SUBACHOQUE_;;no;;;
+25805;tibacuy;Tibacuy;2024;urbana_rural;acc_2024;TIBACUY_;;no;MUNICIPIO DE TIBACUY;8000186895;
+25807;tibirita;Tibirita;2024;urbana_rural;acc_2024;TIBIRITA_;;no;;;
+25815;tocaima;Tocaima;2024;urbana_rural;acc_2024;TOCAIMA_;;no;;;

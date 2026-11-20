@@ -1,0 +1,26 @@
+﻿codigo;municipio;vigencia;actualizacion;fuente;estado;predios_migrados;avaluo;avaluo_cuadra;predios_sin_unidad_espacial;interesados_excluidos;imputado_documento_sin_dato;copropiedad_coef_distinto_1;av_tipologias;ili2pg;ilivalidator;xtf_sha256;git_commit
+25053;Arbeláez;2023;urbana;acc_mayo_2023.cun25053;sin_correr;;;;;;;;;;;;
+25168;Chaguaní;2023;urbana_rural;acc_mayo_2023.cun25168;interrumpida en exportar;2718;291067399000.0;True;18;0;0;0;13;;;;830aff751f
+25279;Fómeque;2023;urbana;acc_mayo_2023.cun25279;sin_correr;;;;;;;;;;;;
+25486;Nemocón;2023;urbana;acc_mayo_2023.cun25486;completo;5983;598625016000.0;True;527;0;1;6;14;valido;valido;e91eed0c8bcc32a0f82c6b30d0757da13da8e4233ea212c952f6063c5b2d6b16;830aff751f
+25489;Nimaima;2023;urbana_rural;acc_mayo_2023.cun25489;sin_correr;;;;;;;;;;;;
+25491;Nocaima;2023;urbana_rural;acc_mayo_2023.cun25491;sin_correr;;;;;;;;;;;;
+25592;Quebradanegra;2023;urbana_rural;acc_mayo_2023.cun25592;sin_correr;;;;;;;;;;;;
+25777;Supatá;2023;urbana_rural;acc_mayo_2023.cun25777;sin_correr;;;;;;;;;;;;
+25781;Sutatausa;2023;urbana_rural;acc_mayo_2023.cun25781;sin_correr;;;;;;;;;;;;
+25793;Tausa;2023;urbana_rural;acc_mayo_2023.cun25793;sin_correr;;;;;;;;;;;;
+25843;Villa de San Diego de Ubaté;2023;urbana_rural;acc_mayo_2023.cun25843;sin_correr;;;;;;;;;;;;
+25862;Vergara;2023;urbana_rural;acc_mayo_2023.cun25862;sin_correr;;;;;;;;;;;;
+25875;Villeta;2023;urbana_rural;acc_mayo_2023.cun25875;sin_correr;;;;;;;;;;;;
+25035;Anapoima;2024;urbana_rural;acc_2024.cun25035;sin_correr;;;;;;;;;;;;
+25040;Anolaima;2024;urbana_rural;acc_2024.cun25040;sin_correr;;;;;;;;;;;;
+25269;Facatativá;2024;urbana_rural;acc_2024.cun25269;sin_correr;;;;;;;;;;;;
+25320;Guaduas;2024;urbana_rural;acc_2024.cun25320;sin_correr;;;;;;;;;;;;
+25326;Guatavita;2024;urbana_rural;acc_2024.cun25326;sin_correr;;;;;;;;;;;;
+25596;Quipile;2024;urbana_rural;acc_2024.cun25596;completo;4632;411517087000.0;True;157;0;0;0;25;valido;valido;7a209551888cea7488cc812769e664ce7cb959a0815606be02b34d0f2c495de8;830aff751f
+25599;Apulo;2024;urbana_rural;acc_2024.cun25599;sin_correr;;;;;;;;;;;;
+25645;San Antonio del Tequendama;2024;urbana_rural;acc_2024.cun25645;sin_correr;;;;;;;;;;;;
+25769;Subachoque;2024;urbana_rural;acc_2024.cun25769;sin_correr;;;;;;;;;;;;
+25805;Tibacuy;2024;urbana_rural;acc_2024.cun25805;sin_correr;;;;;;;;;;;;
+25807;Tibirita;2024;urbana_rural;acc_2024.cun25807;sin_correr;;;;;;;;;;;;
+25815;Tocaima;2024;urbana_rural;acc_2024.cun25815;sin_correr;;;;;;;;;;;;

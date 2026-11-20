@@ -10,7 +10,13 @@ PostgreSQL `cunXXXXX` con tablas `gc_*`, `extavaluo`, `zhf_*`, `cc_*`, etc.) al 
 Solo se migran los predios con avalúo de **una vigencia** (parámetro `VIGENCIA` por
 municipio; filtro `date_part('year', extavaluo.vigencia) = <VIGENCIA>`).
 
-## Municipios procesados
+## Lote de 25 municipios (2026-11-20, vigente)
+
+Proceso actual: `python scripts/lote.py` sobre `config/lote_25.csv`, extrayendo de las BD de corte
+`acc_mayo_2023` (vigencia 2023) y `acc_2024` (vigencia 2024), sin mezcla con XTF del operador. Salida en
+`salida/lote_25/<mun>/` con manifiesto. Detalle, decisiones y estado: [`05_lote_25_municipios.md`](05_lote_25_municipios.md).
+
+## Municipios procesados (antes del lote, con backups y XTF del operador)
 
 | Municipio | Código DANE | Esquema origen | BD PostgreSQL | Vigencia | Prefijo id_operacion | Dataset | XTF |
 |---|---|---|---|---|---|---|---|
@@ -39,7 +45,10 @@ destino (`lev_cat_12`, estructura generada por ili2pg 5.5.1 a partir de los mode
 migracion_modelo_lev_1_2/
 ├── .env / .env.example           # Conexión PostgreSQL y rutas (.env no se versiona)
 ├── config/municipios/<mun>.env   # Parámetros por municipio (esquema, BD, prefijo, vigencia, backup, NIT)
-├── scripts/migrar.sh             # Orquestador: preparar | auxiliar | dominios | etl | complemento | cancelados | operador | fix | exportar | verificar | todo
+├── config/lote_25.csv            # Catálogo del lote: código, vigencia, BD de corte, prefijo, opciones
+├── config/homologaciones.csv     # Reglas de homologación de dominios (fx_hom), con su decisión
+├── scripts/lote.py               # Orquestador del lote (vigente): extraer..validar, manifiesto, resumen
+├── scripts/migrar.sh             # Orquestador heredado (migraciones con XTF del operador): preparar | auxiliar | dominios | etl | complemento | cancelados | operador | fix | exportar | verificar | todo
 ├── scripts/extraer_cancelados_xtf.py   # Predios con novedad Cancelacion de un XTF previo (+ objetos dependientes)
 ├── scripts/comparar_xtf.py       # Compara dos XTF (conteos por clase, llenado de atributos, predios)
 ├── scripts/extraer_complemento_xtf.py  # Extrae de un XTF previo datos ausentes en el backup
@@ -47,7 +56,9 @@ migracion_modelo_lev_1_2/
 ├── scripts/comparar_registro_catastral.py  # Compara XTF vs XML registro_catastral (npn y código homologado)
 ├── comparacion/                 # XTF de referencia e informes de comparación
 ├── etl/
+│   ├── esquema/lev_cat_12_plantilla.sql  # Esquema destino versionado (estructura + catálogos)
 │   ├── plantilla/                # ÚNICO ETL vigente, parametrizado con variables psql
+│   │   ├── 00_homologaciones.sql    # mig_homologacion + fx_hom + fx_dom (correr antes de 00 y 01)
 │   │   ├── 00_check_dominios.sql
 │   │   ├── 01_migracion.sql
 │   │   ├── 02_fix_validacion.sql
@@ -57,7 +68,9 @@ migracion_modelo_lev_1_2/
 │   │   └── 06_complemento_operador.sql # opcional: linderos, puntos, fuentes espaciales, ZHF urbanas y tipologías del XTF previo (vía esquema ref_ope)
 │   └── historico/                # Scripts por municipio usados para Tibirita y Tibacuy (no usar)
 ├── LADM_COL_Lev_Cat_v1_2_docs/   # Modelos .ili
-├── salida/                       # XTF generados + .sha256 de los válidos
+├── insumos/lote_25/              # Dumps por esquema extraídos de las BD de corte (no versionados)
+├── ili2pg/                       # ili2pg 5.5.1 e ilivalidator 1.15.0 locales (no versionados)
+├── salida/                       # XTF generados + .sha256 de los válidos (lote: salida/lote_25/<mun>/)
 ├── logs/                         # Logs de restauración y export de ili2pg
 ├── docs/                         # Esta documentación
 └── *.sql                         # Backups pg_dump de los municipios (no versionados)

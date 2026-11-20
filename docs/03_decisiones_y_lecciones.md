@@ -16,6 +16,19 @@ nuevo**: casi todo lo que falla ya falló antes.
 | Geometrías vacías tras limpieza (área < tolerancia) en construcción/unidad | `geometria = NULL` | El atributo es opcional en esas clases; eran astillas degeneradas sin valor catastral |
 | `resultado_visita` (texto libre) | CASE de homologación a ilicodes (`No permitieron acceso` → `No_Permitieron_Acceso`, etc.) | Ver ETL sección 11 |
 
+### Reglas globales nuevas del lote de 25 municipios (2026-11-20)
+
+Ver `05_lote_25_municipios.md` §2–3.
+
+| Situación | Decisión |
+|---|---|
+| Homologaciones de dominio | Ya no son `CASE` en el SQL: `config/homologaciones.csv` (con la decisión que las originó) + `public.fx_hom`. Una regla cuyo destino no sea ilicode del dominio aborta la corrida |
+| Interesados, agrupaciones y miembros | Solo los titulares de derechos de predios migrados (antes: todo `gc_interesado` del municipio). Métrica `interesados_sin_derecho_migrado_excluidos` |
+| Linderos y puntos de lindero | Solo los que delimitan una unidad espacial migrada (`col_masccl`/`col_menosccl`) y sus puntos. Los puntos de levantamiento se migran todos. Métrica `excluido_linderos_sin_ue_migrada` |
+| `local_id` / `espacio_de_nombres` vacíos (`''`) en el origen | Se tratan como NULL → id / nombre de la clase (Chaguaní: 2 fuentes administrativas; ili2pg exporta, ilivalidator rechaza `Attribute Local_Id requires a value`) |
+| `comienzo_vida_util_version` NULL en el origen (MANDATORY). Preflight 2026-11-20: 10 de 25 municipios, ~500 objetos (terrenos, construcciones, unidades, características; Subachoque también 2 derechos y 3 interesados) | Terreno, construcción, unidad y derecho heredan la fecha de su predio (la menor si hay varios); el resto (características, interesados, agrupaciones, linderos, puntos) toma el 1 de enero de la vigencia, igual que las servidumbres. Métrica `imputado_comienzo_vida_util`. El interesado placeholder `SIN DATO` usaba `now()` (XTF distinto en cada corrida): ahora usa la misma regla |
+| `AV_TipologiaConstruccion` de municipios 2023 | `tb_valortipologia` vigencia 2023 tomada de `acc_2024` (esquema `aux_tipologia`) |
+
 ### Tibacuy (cun25805)
 
 | Situación | Decisión |
@@ -99,6 +112,16 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
 | Avalúo de unidades del operador | No se toma (`COMPLEMENTO_AVALUO_UNIDADES=no`, decisión del usuario 2026-10-14): no cuadra con el avalúo 2023 del gestor (mediana 2,3 % del avalúo del predio; p. ej. casa de 213,8 m² con unidad de $24.396) y mezcla escalas. El campo es opcional. Opción nueva de la etapa `complemento` (por defecto `si`: Sutatausa sin cambio) |
 
 ## Catálogo de errores de validación ili2pg
+
+> Desde el lote de 25 municipios la validación final es **ili2pg + ilivalidator 1.15.0** (`scripts/lote.py`,
+> etapa `validar`). ilivalidator rechaza cosas que la validación del export de ili2pg deja pasar: textos
+> MANDATORY vacíos (`''`) como `Numero_Via` (Nemocón) o `Local_Id` (Chaguaní).
+
+### `Attribute <X> requires a value` (ilivalidator; ili2pg no lo reporta)
+
+- **Causa**: atributo MANDATORY con cadena vacía `''` en el origen. `COALESCE` no la reemplaza.
+- **Solución**: `COALESCE(NULLIF(btrim(x),''), <valor por defecto>)` o excluir el objeto si no hay valor
+  legítimo (regla global, ver `local_id` y `cc_nomenclaturavial`).
 
 ### `OID ...col_ueBaunit:<uuid>:<uuid> of object col_ueBaunit already exists`
 

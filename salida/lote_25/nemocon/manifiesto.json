@@ -1,0 +1,213 @@
+{
+  "municipio": {
+    "codigo": "25486",
+    "mun": "nemocon",
+    "nombre": "Nemocón",
+    "vigencia": "2023",
+    "actualizacion": "urbana",
+    "prefijo": "NEMOCON_"
+  },
+  "bd_trabajo": "l25_nemocon",
+  "codigo": {
+    "git_commit": "830aff751f761b67c5fb3398f716cd4e90106e1d",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "env.example",
+      ".gitignore",
+      "etl/plantilla/00_check_dominios.sql",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "scripts/migrar.sh",
+      "config/homologaciones.csv",
+      "config/lote_25.csv",
+      "etl/esquema/",
+      "etl/plantilla/00_homologaciones.sql",
+      "salida/lote_25/",
+      "scripts/lote.py"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "e67f95b401cb1c3ad67ae2fa79e6506e43be19f3929089e44b8622efea5d7dca",
+      "etl/plantilla/02_fix_validacion.sql": "646b695dbcdcd79d4786cb291bbf4183bea8fdae9564eda5e4fb00ce8343d249",
+      "etl/plantilla/03_verificacion.sql": "9224686b5ba8d3feae3bc4833815744b85d3db7492f4f0d33e57bdbbed03924f",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T11:41:10",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:33",
+      "segundos": 23.2
+    },
+    "preparar": {
+      "inicio": "2026-11-20T11:41:33",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:44",
+      "segundos": 10.8
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T11:41:44",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:44",
+      "segundos": 0.2
+    },
+    "dominios": {
+      "inicio": "2026-11-20T11:41:44",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:45",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T11:41:45",
+      "estado": "ok",
+      "fin": "2026-11-20T11:42:07",
+      "segundos": 22.8
+    },
+    "fix": {
+      "inicio": "2026-11-20T11:42:07",
+      "estado": "ok",
+      "fin": "2026-11-20T11:42:09",
+      "segundos": 1.4
+    },
+    "verificar": {
+      "inicio": "2026-11-20T11:42:09",
+      "estado": "ok",
+      "fin": "2026-11-20T11:42:09",
+      "segundos": 0.7
+    },
+    "exportar": {
+      "inicio": "2026-11-20T11:42:09",
+      "estado": "ok",
+      "fin": "2026-11-20T11:43:12",
+      "segundos": 62.6
+    },
+    "validar": {
+      "inicio": "2026-11-20T11:43:12",
+      "estado": "ok",
+      "fin": "2026-11-20T11:43:46",
+      "segundos": 34.3
+    }
+  },
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25486",
+    "dump": "insumos/lote_25/nemocon_acc_mayo_2023_cun25486.dump",
+    "dump_sha256": "cefeeb77e51f1ec4bbb2e66bafb8d510ad3c0c6c09c05e08235986a4abd58d3b",
+    "dump_fecha": "2026-11-20T11:41:33",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 41,
+      "sha256": {
+        "insumos/lote_25/nemocon_acc_2024_tb_valortipologia.tsv": "5b300cfa27857a159b3baa89fe75a7f062bb9f6fbb283b2d75ed580e3f0e01fe",
+        "insumos/lote_25/nemocon_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    }
+  },
+  "avisos": {
+    "dominios_zhf_sin_equivalente": [
+      {
+        "uso": "zhf_rural.disponibilidad_agua",
+        "valor": "2",
+        "n": 8
+      },
+      {
+        "uso": "zhf_rural.disponibilidad_agua",
+        "valor": "3",
+        "n": 15
+      },
+      {
+        "uso": "zhf_rural.disponibilidad_agua",
+        "valor": "4",
+        "n": 6
+      },
+      {
+        "uso": "zhf_rural.uso_actual_suelo",
+        "valor": "16",
+        "n": 29
+      }
+    ]
+  },
+  "metricas": {
+    "avaluo_origen": 598625016000.0,
+    "avaluo_destino": 598625016000.0,
+    "predios_con_avaluo_vigencia": 5983,
+    "predios_migrados": 5983,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 1015,
+    "copropiedad_destino": 1015,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 5983,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 527,
+    "copropiedad_matrices_coef_distinto_1": 6,
+    "interesados_origen_total": 6992,
+    "interesados_sin_derecho_migrado_excluidos": 0,
+    "imputado_documento_sin_dato": 1,
+    "imputado_interesado_placeholder": 1,
+    "imputado_rrrfuente_desde_unidadfuente": 2904,
+    "imputado_numero_pisos_1": 0,
+    "imputado_area_terreno_geometrica": 1,
+    "excluido_uc_sin_construccion_o_caract": 1,
+    "excluido_nomenclatura_sin_tipo_o_numero": 6,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "vigencia_zhf_rural": 2021,
+    "vigencia_zhf_urbana": 2023,
+    "vigencia_zhg_rural": 2021,
+    "vigencia_zhg_urbana": 2023,
+    "conteo.av_tipologiaconstruccion": 14,
+    "conteo.av_zonahomogeneafisicarural": 29,
+    "conteo.av_zonahomogeneageoeconomicarural": 17,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 11,
+    "conteo.cc_manzana": 77,
+    "conteo.cc_nomenclaturavial": 81,
+    "conteo.cc_perimetrourbano": 1,
+    "conteo.cc_sectorrural": 1,
+    "conteo.cc_sectorurbano": 1,
+    "conteo.cc_vereda": 11,
+    "conteo.col_miembros": 4948,
+    "conteo.col_rrrfuente": 6050,
+    "conteo.col_uebaunit": 11214,
+    "conteo.col_unidadfuente": 5141,
+    "conteo.extdireccion": 6095,
+    "conteo.extreferenciaregistralsistemaantiguo": 28,
+    "conteo.lc_agrupacioninteresados": 1614,
+    "conteo.lc_calificacionnoconvencional": 834,
+    "conteo.lc_caracteristicasunidadconstruccion": 4303,
+    "conteo.lc_construccion": 1753,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 2926,
+    "conteo.lc_datosphcondominio": 32,
+    "conteo.lc_derecho": 5983,
+    "conteo.lc_fuenteadministrativa": 8207,
+    "conteo.lc_interesado": 6993,
+    "conteo.lc_ofertasmercadoinmobiliario": 19,
+    "conteo.lc_predio": 5983,
+    "conteo.lc_predio_copropiedad": 1015,
+    "conteo.lc_predio_informalidad": 69,
+    "conteo.lc_terreno": 4441,
+    "conteo.lc_tipologiaconstruccion": 3469,
+    "conteo.lc_unidadconstruccion": 5016
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/nemocon/nemocon_lev_cat_v1_2_vigencia2023.xtf",
+    "ili2pg": "valido",
+    "log_ili2pg": "logs/lote_25/nemocon/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/nemocon/validar_ilivalidator.log",
+    "sha256": "e91eed0c8bcc32a0f82c6b30d0757da13da8e4233ea212c952f6063c5b2d6b16",
+    "bytes": 60486106
+  },
+  "estado": "completo"
+}

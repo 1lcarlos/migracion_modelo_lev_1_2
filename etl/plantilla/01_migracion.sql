@@ -41,21 +41,9 @@ BEGIN
   END LOOP;
 END $$;
 
--- Resuelve el t_id de un dominio destino a partir del valor origen: ilicode exacto,
--- ilicode con ruta (ej. 'Construccion' -> 'Catastro.Construccion') o dispname (texto libre).
-CREATE OR REPLACE FUNCTION public.fx_dom(p_tabla text, p_valor text)
-RETURNS bigint LANGUAGE plpgsql STABLE AS $f$
-DECLARE r bigint;
-BEGIN
-  IF p_valor IS NULL OR btrim(p_valor) = '' THEN RETURN NULL; END IF;
-  EXECUTE format($q$
-    SELECT t_id FROM lev_cat_12.%I
-    WHERE ilicode = $1 OR ilicode LIKE '%%.' || $1
-       OR lower(regexp_replace(dispname, '[–—]', '-', 'g')) = lower(regexp_replace(btrim($1), '[–—]', '-', 'g'))
-    ORDER BY (ilicode = $1) DESC, (thisclass ILIKE '%%Lev_Cat%%') DESC, t_id
-    LIMIT 1$q$, p_tabla) INTO r USING p_valor;
-  RETURN r;
-END $f$;
+-- public.fx_dom y public.fx_hom se definen en 00_homologaciones.sql (correr antes)
+-- Local_Id y Espacio_De_Nombres son MANDATORY: vacío o NULL en el origen -> id / nombre de la clase
+-- (Chaguaní: 2 fuentes con local_id ''; ili2pg lo exporta, ilivalidator lo rechaza)
 
 BEGIN;
 
@@ -100,6 +88,7 @@ INSERT INTO lev_cat_12.t_ili2db_basket(t_id, dataset, topic, t_ili_tid, attachme
 -- Universo de migración (filtro por vigencia y exclusión de huérfanos)
 -- ------------------------------------------------------------
 DROP TABLE IF EXISTS mig_predio, mig_terreno, mig_constr, mig_uc, mig_caract, mig_fadm, mig_fesp, mig_serv,
+  mig_agrup, mig_interesado, mig_lindero, mig_puntolindero, mig_cvu,
   map_puntotipo, map_acuerdo, map_foto, map_metodo, map_puntolev;
 
 -- Predios con avalúo de la vigencia
@@ -153,6 +142,33 @@ SELECT f.id FROM :"esq".gc_fuenteadministrativa f
 JOIN :"esq".col_unidadfuente u ON u.fuente_administrativa=f.id
 JOIN mig_predio p ON p.id=u.unidad;
 
+-- Comienzo_Vida_Util_Version es MANDATORY. Si falta en el origen (10 de 25 municipios del lote; p. ej.
+-- Quipile 30 terrenos) se hereda la fecha del predio de la unidad espacial (la menor si hay varios) o,
+-- sin predio directo, el 1 de enero de la vigencia (misma regla que las servidumbres). Métrica en 03.
+CREATE TEMP TABLE mig_cvu AS
+SELECT 'terreno'::text AS clase, u.ue_gc_terreno AS id, min(p.comienzo_vida_util_version) AS cvu
+FROM :"esq".col_uebaunit u JOIN mig_predio p ON p.id=u.unidad WHERE u.ue_gc_terreno IS NOT NULL GROUP BY 2
+UNION ALL
+SELECT 'construccion', u.ue_gc_construccion, min(p.comienzo_vida_util_version)
+FROM :"esq".col_uebaunit u JOIN mig_predio p ON p.id=u.unidad WHERE u.ue_gc_construccion IS NOT NULL GROUP BY 2
+UNION ALL
+SELECT 'uc', u.ue_gc_unidadconstruccion, min(p.comienzo_vida_util_version)
+FROM :"esq".col_uebaunit u JOIN mig_predio p ON p.id=u.unidad WHERE u.ue_gc_unidadconstruccion IS NOT NULL GROUP BY 2;
+CREATE INDEX ON mig_cvu(clase, id);
+
+-- Titulares: solo los de derechos de predios migrados (agrupaciones y sus miembros incluidos).
+-- Antes se migraba todo gc_interesado del municipio: quedaban personas sin derecho en el XTF.
+CREATE TEMP TABLE mig_agrup AS
+SELECT DISTINCT d.interesado_gc_agrupacioninteresados AS id FROM :"esq".gc_derecho d
+JOIN mig_predio p ON p.id=d.baunit WHERE d.interesado_gc_agrupacioninteresados IS NOT NULL;
+
+CREATE TEMP TABLE mig_interesado AS
+SELECT d.interesado_gc_interesado AS id FROM :"esq".gc_derecho d
+JOIN mig_predio p ON p.id=d.baunit WHERE d.interesado_gc_interesado IS NOT NULL
+UNION
+SELECT m.interesado_gc_interesado FROM :"esq".col_miembros m JOIN mig_agrup a ON a.id=m.agrupacion
+WHERE m.interesado_gc_interesado IS NOT NULL;
+
 -- ------------------------------------------------------------
 -- 1. LC_Predio  (t_id = 1M + id)
 -- ------------------------------------------------------------
@@ -174,15 +190,15 @@ SELECT 100000000+p.id, 1, md5(:'mun'||'_lc_predio'||p.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.col_unidadadministrativabasicatipo e
     WHERE e.thisclass='Modelo_Aplicacion_LADMCOL_Lev_Cat_V1_2.LC_PredioTipo'
       AND e.ilicode='Predio.'||COALESCE(dt.text_code,'Privado')),
-  -- 'Mejora' no existe en LC_CondicionPredioTipo v1.2 (Nemocón): se homologa a Informal
+  -- Homologaciones en config/homologaciones.csv (p. ej. Mejora -> Informal, Nemocón)
   (SELECT e.t_id FROM lev_cat_12.lc_condicionprediotipo e
-    WHERE e.ilicode=CASE WHEN dc.text_code='Mejora' THEN 'Informal' ELSE dc.text_code END),
+    WHERE e.ilicode=public.fx_hom('lc_condicionprediotipo', dc.text_code)),
   (SELECT e.t_id FROM lev_cat_12.lc_destinacioneconomicatipo e WHERE e.ilicode=dd.text_code),
   (SELECT e.t_id FROM lev_cat_12.lc_clasesuelotipo e WHERE e.ilicode=ds.text_code),
   (SELECT e.t_id FROM lev_cat_12.lc_categoriasuelotipo e WHERE e.ilicode=dcat.text_code),
   p.nombre,
   p.comienzo_vida_util_version, p.fin_vida_util_version,
-  COALESCE(p.espacio_de_nombres,'LC_PREDIO'), COALESCE(p.local_id, p.id::text)
+  COALESCE(NULLIF(btrim(p.espacio_de_nombres),''),'LC_PREDIO'), COALESCE(NULLIF(btrim(p.local_id),''), p.id::text)
 FROM mig_predio p
 LEFT JOIN :"esq".gc_prediotipo dt ON dt.id=p.tipo
 LEFT JOIN :"esq".gc_condicionprediotipo dc ON dc.id=p.condicion_predio
@@ -229,8 +245,8 @@ SELECT 300000000+t.id, 1, md5(:'mun'||'_lc_terreno'||t.id)::uuid,
   -- area_terreno es MANDATORY: si el origen no la trae se usa el área geométrica (Nemocón: 1 terreno)
   COALESCE(round(t.area,1), round(ST_Area(t.geometria)::numeric,1)), NULL, left(t.codigo,17),
   ST_Multi(ST_CollectionExtract(ST_MakeValid(t.geometria),3)),
-  t.etiqueta, t.comienzo_vida_util_version, t.fin_vida_util_version,
-  COALESCE(t.espacio_de_nombres,'LC_TERRENO'), COALESCE(t.local_id, t.id::text)
+  t.etiqueta, COALESCE(t.comienzo_vida_util_version, (SELECT x.cvu FROM mig_cvu x WHERE x.clase='terreno' AND x.id=t.id), make_date(:vigencia,1,1)), t.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(t.espacio_de_nombres),''),'LC_TERRENO'), COALESCE(NULLIF(btrim(t.local_id),''), t.id::text)
 FROM :"esq".gc_terreno t JOIN mig_terreno m ON m.id=t.id;
 
 -- ------------------------------------------------------------
@@ -254,8 +270,8 @@ SELECT 400000000+c.id, 1, md5(:'mun'||'_lc_construccion'||c.id)::uuid,
   NULLIF(ST_Multi(ST_CollectionExtract(ST_MakeValid(c.geometria),3)),
          ST_SetSRID('MULTIPOLYGON EMPTY'::geometry, 9377)),
   c.etiqueta,
-  c.comienzo_vida_util_version, c.fin_vida_util_version,
-  COALESCE(c.espacio_de_nombres,'LC_CONSTRUCCION'), COALESCE(c.local_id, c.id::text)
+  COALESCE(c.comienzo_vida_util_version, (SELECT x.cvu FROM mig_cvu x WHERE x.clase='construccion' AND x.id=c.id), make_date(:vigencia,1,1)), c.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(c.espacio_de_nombres),''),'LC_CONSTRUCCION'), COALESCE(NULLIF(btrim(c.local_id),''), c.id::text)
 FROM :"esq".gc_construccion c
 JOIN mig_constr m ON m.id=c.id
 LEFT JOIN :"esq".gc_construcciontipo tc ON tc.id=c.tipo_construccion
@@ -280,8 +296,8 @@ SELECT 600000000+k.id, 1, md5(:'mun'||'_lc_caract'||k.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.lc_usouconstipo e WHERE e.ilicode=us.text_code),
   CASE WHEN k.anio_construccion BETWEEN 1512 AND 2500 THEN k.anio_construccion END,
   NULL, round(k.area,1), round(k.area_privada_construida,1), k.observacion,
-  k.comienzo_vida_util_version, k.fin_vida_util_version,
-  COALESCE(k.espacio_de_nombres,'LC_CARACTERISTICASUNIDADCONSTRUCCION'), COALESCE(k.local_id, k.id::text)
+  COALESCE(k.comienzo_vida_util_version, make_date(:vigencia,1,1)), k.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(k.espacio_de_nombres),''),'LC_CARACTERISTICASUNIDADCONSTRUCCION'), COALESCE(NULLIF(btrim(k.local_id),''), k.id::text)
 FROM :"esq".gc_caracteristicasunidadconstruccion k
 JOIN mig_caract m ON m.id=k.id
 LEFT JOIN :"esq".gc_construcciontipo tc ON tc.id=k.tipo_construccion
@@ -304,8 +320,8 @@ SELECT 500000000+uc.id, 1, md5(:'mun'||'_lc_uc'||uc.id)::uuid,
          ST_SetSRID('MULTIPOLYGON EMPTY'::geometry, 9377)),
   600000000+uc.gc_caracteristicasunidadconstruccion, 400000000+uc.gc_construccion,
   uc.etiqueta,
-  uc.comienzo_vida_util_version, uc.fin_vida_util_version,
-  COALESCE(uc.espacio_de_nombres,'LC_UNIDADCONSTRUCCION'), COALESCE(uc.local_id, uc.id::text)
+  COALESCE(uc.comienzo_vida_util_version, (SELECT x.cvu FROM mig_cvu x WHERE x.clase='uc' AND x.id=uc.id), make_date(:vigencia,1,1)), uc.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(uc.espacio_de_nombres),''),'LC_UNIDADCONSTRUCCION'), COALESCE(NULLIF(btrim(uc.local_id),''), uc.id::text)
 FROM :"esq".gc_unidadconstruccion uc JOIN mig_uc m ON m.id=uc.id;
 
 -- ------------------------------------------------------------
@@ -339,9 +355,9 @@ INSERT INTO lev_cat_12.lc_interesado
   comienzo_vida_util_version, fin_vida_util_version, espacio_de_nombres, local_id)
 SELECT 900000000+i.id, 1, md5(:'mun'||'_lc_interesado'||i.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.lc_interesadotipo e WHERE e.ilicode=ti.text_code),
-  -- NUIP no existe en LC_InteresadoDocumentoTipo v1.2: se homologa a Registro_Civil
+  -- Homologaciones en config/homologaciones.csv (p. ej. NUIP -> Registro_Civil, Tibacuy)
   (SELECT e.t_id FROM lev_cat_12.lc_interesadodocumentotipo e
-    WHERE e.ilicode = CASE WHEN td.text_code='NUIP' THEN 'Registro_Civil' ELSE td.text_code END),
+    WHERE e.ilicode = public.fx_hom('lc_interesadodocumentotipo', td.text_code)),
   -- documento_identidad es MANDATORY: si viene vacío y la razón social es la del municipio
   -- se usa el NIT del municipio (parámetro); en otro caso placeholder 'Sin_Dato'
   COALESCE(NULLIF(btrim(i.documento_identidad),''),
@@ -349,16 +365,17 @@ SELECT 900000000+i.id, 1, md5(:'mun'||'_lc_interesado'||i.id)::uuid,
          THEN :'nit_municipio' END,
     'Sin_Dato'),
   i.primer_nombre, i.segundo_nombre, i.primer_apellido, i.segundo_apellido,
-  -- 'Otro' (Sutatausa) y 'No_Binario' (Nemocón) no existen en LC_SexoTipo v1.2: se homologan a Sin_Determinar
+  -- Homologaciones en config/homologaciones.csv (Otro, No_Binario -> Sin_Determinar)
   (SELECT e.t_id FROM lev_cat_12.lc_sexotipo e
-   WHERE e.ilicode=CASE WHEN sx.text_code IN ('Otro','No_Binario') THEN 'Sin_Determinar' ELSE sx.text_code END),
+   WHERE e.ilicode=public.fx_hom('lc_sexotipo', sx.text_code)),
   (SELECT e.t_id FROM lev_cat_12.lc_grupoetnicotipo e WHERE e.ilicode=ge.text_code),
   i.razon_social,
   (SELECT e.t_id FROM lev_cat_12.lc_estadociviltipo e WHERE e.ilicode=ec.text_code),
   i.nombre,
-  i.comienzo_vida_util_version, i.fin_vida_util_version,
-  COALESCE(i.espacio_de_nombres,'LC_INTERESADO'), COALESCE(i.local_id, i.id::text)
+  COALESCE(i.comienzo_vida_util_version, make_date(:vigencia,1,1)), i.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(i.espacio_de_nombres),''),'LC_INTERESADO'), COALESCE(NULLIF(btrim(i.local_id),''), i.id::text)
 FROM :"esq".gc_interesado i
+JOIN mig_interesado mi ON mi.id=i.id
 LEFT JOIN :"esq".gc_interesadotipo ti ON ti.id=i.tipo
 LEFT JOIN :"esq".gc_interesadodocumentotipo td ON td.id=i.tipo_documento
 LEFT JOIN :"esq".gc_sexotipo sx ON sx.id=i.sexo
@@ -371,15 +388,18 @@ INSERT INTO lev_cat_12.lc_agrupacioninteresados
 SELECT 1000000000+a.id, 1, md5(:'mun'||'_lc_agrupacion'||a.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.col_grupointeresadotipo e WHERE e.ilicode=tg.text_code),
   a.nombre,
-  a.comienzo_vida_util_version, a.fin_vida_util_version,
-  COALESCE(a.espacio_de_nombres,'LC_AGRUPACIONINTERESADOS'), COALESCE(a.local_id, a.id::text)
+  COALESCE(a.comienzo_vida_util_version, make_date(:vigencia,1,1)), a.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(a.espacio_de_nombres),''),'LC_AGRUPACIONINTERESADOS'), COALESCE(NULLIF(btrim(a.local_id),''), a.id::text)
 FROM :"esq".gc_agrupacioninteresados a
+JOIN mig_agrup ma ON ma.id=a.id
 LEFT JOIN :"esq".col_grupointeresadotipo tg ON tg.id=a.tipo;
 
 INSERT INTO lev_cat_12.col_miembros
  (t_id, t_basket, interesado_lc_interesado, agrupacion, participacion)
 SELECT 1700000000+m.id, 1, 900000000+m.interesado_gc_interesado, 1000000000+m.agrupacion, m.participacion
-FROM :"esq".col_miembros m;
+FROM :"esq".col_miembros m
+JOIN mig_agrup ma ON ma.id=m.agrupacion
+WHERE m.interesado_gc_interesado IS NOT NULL;
 
 -- ------------------------------------------------------------
 -- 9. LC_Derecho (11M), LC_FuenteAdministrativa (12M), col_rrrfuente (16M)
@@ -396,8 +416,8 @@ SELECT 1100000000+d.id, 1, md5(:'mun'||'_lc_derecho'||d.id)::uuid,
        WHEN d.interesado_gc_agrupacioninteresados IS NULL THEN 5300000000+d.id END,
   CASE WHEN d.interesado_gc_agrupacioninteresados IS NOT NULL THEN 1000000000+d.interesado_gc_agrupacioninteresados END,
   100000000+d.baunit,
-  d.comienzo_vida_util_version, d.fin_vida_util_version,
-  COALESCE(d.espacio_de_nombres,'LC_DERECHO'), COALESCE(d.local_id, d.id::text)
+  COALESCE(d.comienzo_vida_util_version, p.comienzo_vida_util_version, make_date(:vigencia,1,1)), d.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(d.espacio_de_nombres),''),'LC_DERECHO'), COALESCE(NULLIF(btrim(d.local_id),''), d.id::text)
 FROM :"esq".gc_derecho d
 JOIN mig_predio p ON p.id=d.baunit
 LEFT JOIN :"esq".gc_derechotipo dt ON dt.id=d.tipo;
@@ -411,7 +431,7 @@ SELECT 5300000000+d.id, 1, md5(:'mun'||'_lc_interesado_sin_dato'||d.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.lc_interesadotipo e WHERE e.ilicode='Persona_Natural'),
   (SELECT e.t_id FROM lev_cat_12.lc_interesadodocumentotipo e WHERE e.ilicode='Secuencial'),
   'Sin_Dato', 'SIN DATO', 'SIN DATO',
-  COALESCE(d.comienzo_vida_util_version, now()), 'LC_INTERESADO', 'SIN_DATO_'||d.id
+  COALESCE(d.comienzo_vida_util_version, p.comienzo_vida_util_version, make_date(:vigencia,1,1)), 'LC_INTERESADO', 'SIN_DATO_'||d.id
 FROM :"esq".gc_derecho d JOIN mig_predio p ON p.id=d.baunit
 WHERE d.interesado_gc_interesado IS NULL AND d.interesado_gc_agrupacioninteresados IS NULL;
 
@@ -427,7 +447,7 @@ SELECT 1200000000+f.id, 1, md5(:'mun'||'_lc_fadm'||f.id)::uuid,
   -- Regla tomada del XTF de referencia de Vergara: estado Desconocido -> forma de presentación 'Otro'
   CASE WHEN ed.text_code = 'Desconocido' THEN public.fx_dom('ci_forma_presentacion_codigo','Otro') END,
   f.fecha_documento_fuente,
-  COALESCE(f.espacio_de_nombres,'LC_FUENTEADMINISTRATIVA'), COALESCE(f.local_id, f.id::text)
+  COALESCE(NULLIF(btrim(f.espacio_de_nombres),''),'LC_FUENTEADMINISTRATIVA'), COALESCE(NULLIF(btrim(f.local_id),''), f.id::text)
 FROM :"esq".gc_fuenteadministrativa f
 JOIN mig_fadm m ON m.id=f.id
 LEFT JOIN :"esq".gc_fuenteadministrativatipo tf ON tf.id=f.tipo
@@ -472,7 +492,7 @@ SELECT 4800000000+s.id, 1, md5(:'mun'||'_lc_servidumbre'||s.id)::uuid,
   round(COALESCE(s.area, ST_Area(s.geometria)::numeric),1), s.etiqueta,
   ST_Multi(ST_CollectionExtract(ST_MakeValid(s.geometria),3)),
   COALESCE(s.comienzo_vida_util_version, make_date(:vigencia,1,1)), s.fin_vida_util_version,
-  COALESCE(s.espacio_de_nombres,'LC_SERVIDUMBRETRANSITO'), COALESCE(s.local_id, s.id::text)
+  COALESCE(NULLIF(btrim(s.espacio_de_nombres),''),'LC_SERVIDUMBRETRANSITO'), COALESCE(NULLIF(btrim(s.local_id),''), s.id::text)
 FROM :"esq".gc_servidumbretransito s JOIN mig_serv m ON m.id=s.id;
 
 INSERT INTO lev_cat_12.col_uebaunit
@@ -536,16 +556,8 @@ SELECT 1300000000+d.id, 1, md5(:'mun'||'_lc_dlc'||d.id)::uuid,
   d.numero_documento_reconocedor,
   d.primer_nombre_reconocedor, d.segundo_nombre_reconocedor,
   d.primer_apellido_reconocedor, d.segundo_apellido_reconocedor,
-  (SELECT e.t_id FROM lev_cat_12.lc_resultadovisitatipo e WHERE e.ilicode=
-    CASE d.resultado_visita
-      WHEN 'Exitoso' THEN 'Exitoso'
-      WHEN 'Otro' THEN 'Otro'
-      WHEN 'Incompleto' THEN 'Incompleto'
-      WHEN 'No permitieron acceso' THEN 'No_Permitieron_Acceso'
-      WHEN 'No hay nadie' THEN 'No_Hay_Nadie'
-      WHEN 'Menor de edad' THEN 'Menor_Edad'
-      WHEN 'Zona de difícil acceso' THEN 'Zona_Dificil_Acceso'
-    END),
+  -- Texto libre del gestor -> ilicode (config/homologaciones.csv); 00_check_dominios lo controla
+  public.fx_dom('lc_resultadovisitatipo', public.fx_hom('lc_resultadovisitatipo', d.resultado_visita)),
   d.otro_cual_resultado_visita, d.suscribe_acta_colindancia,
   d.despojo_abandono, NULL, NULLIF(d.otro_cual_estrato,''),
   100000000+d.gc_predio
@@ -579,14 +591,31 @@ CREATE TEMP TABLE map_foto      AS SELECT id, public.fx_dom('lc_fotoidentificaci
 CREATE TEMP TABLE map_metodo    AS SELECT id, public.fx_dom('col_metodoproducciontipo', text_code) t FROM :"esq".col_metodoproducciontipo;
 CREATE TEMP TABLE map_puntolev  AS SELECT id, public.fx_dom('lc_puntolevtipo', text_code) t FROM :"esq".gc_puntolevtipo;
 
+-- Linderos: solo los que delimitan (col_masccl/col_menosccl) una unidad espacial migrada; puntos de
+-- lindero: solo los de esos linderos (col_puntoccl). Los puntos de levantamiento se migran todos.
+CREATE TEMP TABLE mig_lindero AS
+SELECT c.ccl_mas AS id FROM :"esq".col_masccl c
+WHERE c.ccl_mas IS NOT NULL AND (
+     c.ue_mas_gc_terreno IN (SELECT id FROM mig_terreno) OR c.ue_mas_gc_construccion IN (SELECT id FROM mig_constr)
+  OR c.ue_mas_gc_unidadconstruccion IN (SELECT id FROM mig_uc) OR c.ue_mas_gc_servidumbretransito IN (SELECT id FROM mig_serv))
+UNION
+SELECT c.ccl_menos FROM :"esq".col_menosccl c
+WHERE c.ccl_menos IS NOT NULL AND (
+     c.ue_menos_gc_terreno IN (SELECT id FROM mig_terreno) OR c.ue_menos_gc_construccion IN (SELECT id FROM mig_constr)
+  OR c.ue_menos_gc_unidadconstruccion IN (SELECT id FROM mig_uc) OR c.ue_menos_gc_servidumbretransito IN (SELECT id FROM mig_serv));
+
+CREATE TEMP TABLE mig_puntolindero AS
+SELECT DISTINCT c.punto_gc_puntolindero AS id FROM :"esq".col_puntoccl c
+JOIN mig_lindero l ON l.id=c.ccl WHERE c.punto_gc_puntolindero IS NOT NULL;
+
 INSERT INTO lev_cat_12.lc_lindero
  (t_id, t_basket, t_ili_tid, longitud, geometria, localizacion_textual,
   comienzo_vida_util_version, fin_vida_util_version, espacio_de_nombres, local_id)
 SELECT 3400000000+l.id, 1, md5(:'mun'||'_lc_lindero'||l.id)::uuid,
   round(l.longitud,1), ST_Force3D(l.geometria), left(l.localizacion_textual,255),
-  l.comienzo_vida_util_version, l.fin_vida_util_version,
-  COALESCE(l.espacio_de_nombres,'LC_LINDERO'), COALESCE(l.local_id, l.id::text)
-FROM :"esq".gc_lindero l;
+  COALESCE(l.comienzo_vida_util_version, make_date(:vigencia,1,1)), l.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(l.espacio_de_nombres),''),'LC_LINDERO'), COALESCE(NULLIF(btrim(l.local_id),''), l.id::text)
+FROM :"esq".gc_lindero l JOIN mig_lindero ml ON ml.id=l.id;
 
 INSERT INTO lev_cat_12.lc_puntolindero
  (t_id, t_basket, t_ili_tid, id_punto_lindero, puntotipo, acuerdo, fotoidentificacion,
@@ -595,9 +624,10 @@ INSERT INTO lev_cat_12.lc_puntolindero
 SELECT 3500000000+p.id, 1, md5(:'mun'||'_lc_puntolindero'||p.id)::uuid,
   p.id_punto, pt.t, ac.t, fo.t,
   round(p.exactitud_horizontal,3), round(p.exactitud_vertical,3), me.t, ST_Force3D(p.geometria),
-  p.comienzo_vida_util_version, p.fin_vida_util_version,
-  COALESCE(p.espacio_de_nombres,'LC_PUNTOLINDERO'), COALESCE(p.local_id, p.id::text)
+  COALESCE(p.comienzo_vida_util_version, make_date(:vigencia,1,1)), p.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(p.espacio_de_nombres),''),'LC_PUNTOLINDERO'), COALESCE(NULLIF(btrim(p.local_id),''), p.id::text)
 FROM :"esq".gc_puntolindero p
+JOIN mig_puntolindero mp ON mp.id=p.id
 LEFT JOIN map_puntotipo pt ON pt.id=p.punto_tipo
 LEFT JOIN map_acuerdo ac ON ac.id=p.acuerdo
 LEFT JOIN map_foto fo ON fo.id=p.fotoidentificacion
@@ -610,8 +640,8 @@ INSERT INTO lev_cat_12.lc_puntolevantamiento
 SELECT 3600000000+p.id, 1, md5(:'mun'||'_lc_puntolev'||p.id)::uuid,
   p.id_punto, pt.t, tl.t, fo.t,
   round(p.exactitud_horizontal,3), round(p.exactitud_vertical,3), me.t, ST_Force3D(p.geometria),
-  p.comienzo_vida_util_version, p.fin_vida_util_version,
-  COALESCE(p.espacio_de_nombres,'LC_PUNTOLEVANTAMIENTO'), COALESCE(p.local_id, p.id::text)
+  COALESCE(p.comienzo_vida_util_version, make_date(:vigencia,1,1)), p.fin_vida_util_version,
+  COALESCE(NULLIF(btrim(p.espacio_de_nombres),''),'LC_PUNTOLEVANTAMIENTO'), COALESCE(NULLIF(btrim(p.local_id),''), p.id::text)
 FROM :"esq".gc_puntolevantamiento p
 LEFT JOIN map_puntotipo pt ON pt.id=p.punto_tipo
 LEFT JOIN map_puntolev tl ON tl.id=p.tipo_punto_levantamiento
@@ -626,8 +656,8 @@ SELECT 3700000000+c.id, 1,
   CASE WHEN c.punto_gc_puntolevantamiento IS NOT NULL THEN 3600000000+c.punto_gc_puntolevantamiento END,
   3400000000+c.ccl
 FROM :"esq".col_puntoccl c
-WHERE c.ccl IS NOT NULL
-  AND (c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL);
+JOIN mig_lindero ml ON ml.id=c.ccl
+WHERE c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL;
 
 INSERT INTO lev_cat_12.col_masccl
  (t_id, t_basket, ccl_mas, ue_mas_lc_terreno, ue_mas_lc_construccion, ue_mas_lc_unidadconstruccion,
@@ -678,7 +708,7 @@ SELECT 4000000000+f.id, 1, md5(:'mun'||'_lc_fesp'||f.id)::uuid,
   -- Regla del XTF de referencia: registro fotográfico -> forma de presentación 'Imagen'
   CASE WHEN tf.text_code = 'Registro_Fotografico' THEN public.fx_dom('ci_forma_presentacion_codigo','Imagen') END,
   f.fecha_documento_fuente,
-  COALESCE(f.espacio_de_nombres,'LC_FUENTEESPACIAL'), COALESCE(f.local_id, f.id::text)
+  COALESCE(NULLIF(btrim(f.espacio_de_nombres),''),'LC_FUENTEESPACIAL'), COALESCE(NULLIF(btrim(f.local_id),''), f.id::text)
 FROM :"esq".gc_fuenteespacial f
 JOIN mig_fesp m ON m.id=f.id
 LEFT JOIN :"esq".gc_fuenteespacialtipo tf ON tf.id=f.tipo
@@ -695,7 +725,7 @@ SELECT 4200000000+a.id, 1,
                      ORDER BY a.seq NULLS LAST, a.id) - 1,
   a.fecha_aceptacion::date, left(a.datos,255), a.extraccion::date, a.fecha_grabacion::date, a.fecha_entrega::date,
   COALESCE(fe.espacio_de_nombres, fa.espacio_de_nombres, 'EXTARCHIVO'),
-  COALESCE(fe.local_id, fa.local_id, a.id::text),
+  COALESCE(NULLIF(btrim(fe.local_id),''), fa.local_id, a.id::text),
   fe.t_id, fa.t_id
 FROM :"esq".extarchivo a
 LEFT JOIN lev_cat_12.lc_fuenteespacial fe ON fe.t_id = 4000000000+a.gc_fuenteespacial_ext_archivo_id

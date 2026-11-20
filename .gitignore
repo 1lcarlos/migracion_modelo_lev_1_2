@@ -8,6 +8,9 @@
 # Binarios de herramientas (ili2pg, ilivalidator): se instalan localmente, ver .env.example
 /ili2pg/
 
+# Insumos extraídos de las BD de corte (dumps con datos personales)
+insumos/
+
 # Productos generados
 salida/**/*.xtf
 salida/**/*.INVALIDO

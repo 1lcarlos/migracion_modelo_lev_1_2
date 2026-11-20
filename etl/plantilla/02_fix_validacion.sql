@@ -142,12 +142,31 @@ END $$;
 
 COMMIT;
 
--- Verificación (todo debe ser 0)
+-- Verificación: todo debe ser 0; si no, se aborta (ili2pg/ilivalidator fallarían igual, más tarde y
+-- con un mensaje menos claro). Ver docs/03_decisiones_y_lecciones.md.
+CREATE TEMP TABLE tmp_fix_check AS
 SELECT 'agrup_con_1_miembro' k,
  (SELECT count(*) FROM (SELECT agrupacion FROM lev_cat_12.col_miembros GROUP BY 1 HAVING count(*)<2) x) n
+UNION ALL SELECT 'agrup_sin_miembros',
+ (SELECT count(*) FROM lev_cat_12.lc_agrupacioninteresados a WHERE NOT EXISTS (SELECT 1 FROM lev_cat_12.col_miembros m WHERE m.agrupacion=a.t_id))
 UNION ALL SELECT 'derechos_sin_titular',
  (SELECT count(*) FROM lev_cat_12.lc_derecho WHERE interesado_lc_interesado IS NULL AND interesado_lc_agrupacioninteresados IS NULL)
+UNION ALL SELECT 'predios_sin_derecho',
+ (SELECT count(*) FROM lev_cat_12.lc_predio p WHERE NOT EXISTS (SELECT 1 FROM lev_cat_12.lc_derecho d WHERE d.unidad=p.t_id))
+UNION ALL SELECT 'derechos_sin_fuente',
+ (SELECT count(*) FROM lev_cat_12.lc_derecho d WHERE NOT EXISTS (SELECT 1 FROM lev_cat_12.col_rrrfuente r WHERE r.rrr_lc_derecho=d.t_id))
 UNION ALL SELECT 'cc_sin_tid', (SELECT count(*) FROM lev_cat_12.cc_vereda WHERE t_ili_tid IS NULL)
 UNION ALL SELECT 'terreno_invalido', (SELECT count(*) FROM lev_cat_12.lc_terreno WHERE NOT ST_IsValid(geometria) OR ST_IsEmpty(geometria))
 UNION ALL SELECT 'constr_invalida', (SELECT count(*) FROM lev_cat_12.lc_construccion WHERE geometria IS NOT NULL AND NOT ST_IsValid(geometria))
 UNION ALL SELECT 'uc_invalida', (SELECT count(*) FROM lev_cat_12.lc_unidadconstruccion WHERE geometria IS NOT NULL AND NOT ST_IsValid(geometria));
+SELECT k, n FROM tmp_fix_check ORDER BY k;
+
+DO $$
+DECLARE det text;
+BEGIN
+  SELECT string_agg(k || '=' || n, ', ') INTO det FROM tmp_fix_check WHERE n > 0;
+  IF det IS NOT NULL THEN
+    RAISE EXCEPTION 'FIX: controles distintos de 0: %', det;
+  END IF;
+  RAISE NOTICE 'FIX OK';
+END $$;

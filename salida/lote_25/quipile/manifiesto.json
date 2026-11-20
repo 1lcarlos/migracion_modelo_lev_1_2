@@ -1,0 +1,182 @@
+{
+  "municipio": {
+    "codigo": "25596",
+    "mun": "quipile",
+    "nombre": "Quipile",
+    "vigencia": "2024",
+    "actualizacion": "urbana_rural",
+    "prefijo": "QUIPILE_"
+  },
+  "bd_trabajo": "l25_quipile",
+  "codigo": {
+    "git_commit": "830aff751f761b67c5fb3398f716cd4e90106e1d",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "env.example",
+      ".gitignore",
+      "docs/01_contexto_general.md",
+      "docs/03_decisiones_y_lecciones.md",
+      "docs/README.md",
+      "etl/plantilla/00_check_dominios.sql",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "scripts/migrar.sh",
+      "config/homologaciones.csv",
+      "config/lote_25.csv",
+      "docs/05_lote_25_municipios.md",
+      "etl/esquema/",
+      "etl/plantilla/00_homologaciones.sql",
+      "salida/lote_25/",
+      "scripts/lote.py"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "4338d4f6042358cd3d345be52b4f502f3e87df3238e2d3967d4658a76f7aa031",
+      "etl/plantilla/02_fix_validacion.sql": "646b695dbcdcd79d4786cb291bbf4183bea8fdae9564eda5e4fb00ce8343d249",
+      "etl/plantilla/03_verificacion.sql": "7719f67f3a8c07ab8935aaebf63149c24511cde50f23a1c2fcdcea3d41489792",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T11:40:51",
+      "estado": "ok",
+      "fin": "2026-11-20T11:40:55",
+      "segundos": 3.8
+    },
+    "preparar": {
+      "inicio": "2026-11-20T11:40:55",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:06",
+      "segundos": 11.6
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T11:41:06",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:06",
+      "segundos": 0.0
+    },
+    "dominios": {
+      "inicio": "2026-11-20T11:41:06",
+      "estado": "ok",
+      "fin": "2026-11-20T11:41:07",
+      "segundos": 0.4
+    },
+    "etl": {
+      "inicio": "2026-11-20T11:44:04",
+      "estado": "ok",
+      "fin": "2026-11-20T11:44:26",
+      "segundos": 22.4
+    },
+    "fix": {
+      "inicio": "2026-11-20T11:44:26",
+      "estado": "ok",
+      "fin": "2026-11-20T11:44:29",
+      "segundos": 2.5
+    },
+    "verificar": {
+      "inicio": "2026-11-20T11:44:29",
+      "estado": "ok",
+      "fin": "2026-11-20T11:44:30",
+      "segundos": 0.7
+    },
+    "exportar": {
+      "inicio": "2026-11-20T11:44:30",
+      "estado": "ok",
+      "fin": "2026-11-20T11:45:43",
+      "segundos": 73.4
+    },
+    "validar": {
+      "inicio": "2026-11-20T11:45:43",
+      "estado": "ok",
+      "fin": "2026-11-20T11:46:52",
+      "segundos": 69.3
+    }
+  },
+  "fuente": {
+    "bd": "acc_2024",
+    "esquema": "cun25596",
+    "dump": "insumos/lote_25/quipile_acc_2024_cun25596.dump",
+    "dump_sha256": "f539deabdce741dda88ad8b73bb0b0f66b05d927acb9576ade49fba5619167ca",
+    "dump_fecha": "2026-11-20T11:40:55"
+  },
+  "estado": "completo",
+  "metricas": {
+    "avaluo_origen": 411517087000.0,
+    "avaluo_destino": 411517087000.0,
+    "predios_con_avaluo_vigencia": 4632,
+    "predios_migrados": 4632,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 0,
+    "copropiedad_destino": 0,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 4632,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 157,
+    "copropiedad_matrices_coef_distinto_1": 0,
+    "interesados_origen_total": 5580,
+    "interesados_sin_derecho_migrado_excluidos": 0,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 0,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 30,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "vigencia_zhf_rural": 2024,
+    "vigencia_zhf_urbana": 2024,
+    "vigencia_zhg_rural": 2024,
+    "vigencia_zhg_urbana": 2024,
+    "conteo.av_tipologiaconstruccion": 25,
+    "conteo.av_zonahomogeneafisicarural": 43,
+    "conteo.av_zonahomogeneafisicaurbana": 32,
+    "conteo.av_zonahomogeneageoeconomicarural": 7,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 29,
+    "conteo.cc_limitemunicipio": 1,
+    "conteo.cc_manzana": 58,
+    "conteo.cc_perimetrourbano": 5,
+    "conteo.cc_sectorrural": 1,
+    "conteo.cc_sectorurbano": 5,
+    "conteo.cc_vereda": 11,
+    "conteo.col_miembros": 3460,
+    "conteo.col_rrrfuente": 4710,
+    "conteo.col_uebaunit": 17714,
+    "conteo.col_unidadfuente": 5102,
+    "conteo.extdireccion": 4634,
+    "conteo.lc_agrupacioninteresados": 1141,
+    "conteo.lc_calificacionnoconvencional": 1411,
+    "conteo.lc_caracteristicasunidadconstruccion": 4450,
+    "conteo.lc_construccion": 6385,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 4599,
+    "conteo.lc_derecho": 4632,
+    "conteo.lc_fuenteadministrativa": 8207,
+    "conteo.lc_interesado": 5580,
+    "conteo.lc_ofertasmercadoinmobiliario": 24,
+    "conteo.lc_predio": 4632,
+    "conteo.lc_terreno": 4468,
+    "conteo.lc_tipologiaconstruccion": 3037,
+    "conteo.lc_unidadconstruccion": 6861
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/quipile/quipile_lev_cat_v1_2_vigencia2024.xtf",
+    "ili2pg": "valido",
+    "log_ili2pg": "logs/lote_25/quipile/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/quipile/validar_ilivalidator.log",
+    "sha256": "7a209551888cea7488cc812769e664ce7cb959a0815606be02b34d0f2c495de8",
+    "bytes": 79028397
+  }
+}

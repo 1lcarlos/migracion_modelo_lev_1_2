@@ -1,0 +1,188 @@
+{
+  "municipio": {
+    "codigo": "25168",
+    "mun": "chaguani",
+    "nombre": "Chaguaní",
+    "vigencia": "2023",
+    "actualizacion": "urbana_rural",
+    "prefijo": "CHAGUANI_"
+  },
+  "bd_trabajo": "l25_chaguani",
+  "codigo": {
+    "git_commit": "830aff751f761b67c5fb3398f716cd4e90106e1d",
+    "git_rama": "lote-25-municipios",
+    "git_sin_commit": [
+      "env.example",
+      ".gitignore",
+      "docs/01_contexto_general.md",
+      "docs/03_decisiones_y_lecciones.md",
+      "docs/README.md",
+      "etl/plantilla/00_check_dominios.sql",
+      "etl/plantilla/01_migracion.sql",
+      "etl/plantilla/02_fix_validacion.sql",
+      "etl/plantilla/03_verificacion.sql",
+      "scripts/migrar.sh",
+      "config/homologaciones.csv",
+      "config/lote_25.csv",
+      "docs/05_lote_25_municipios.md",
+      "etl/esquema/",
+      "etl/plantilla/00_homologaciones.sql",
+      "salida/lote_25/",
+      "scripts/lote.py"
+    ],
+    "sha256_sql": {
+      "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
+      "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
+      "etl/plantilla/01_migracion.sql": "4338d4f6042358cd3d345be52b4f502f3e87df3238e2d3967d4658a76f7aa031",
+      "etl/plantilla/02_fix_validacion.sql": "646b695dbcdcd79d4786cb291bbf4183bea8fdae9564eda5e4fb00ce8343d249",
+      "etl/plantilla/03_verificacion.sql": "7719f67f3a8c07ab8935aaebf63149c24511cde50f23a1c2fcdcea3d41489792",
+      "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
+      "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
+    }
+  },
+  "herramientas": {
+    "ili2pg": "ili2pg-5.5.1.jar",
+    "ilivalidator": "ilivalidator-1.15.0.jar",
+    "java": "java version \"1.8.0_221\"",
+    "psql": "psql (PostgreSQL) 16.9"
+  },
+  "etapas": {
+    "extraer": {
+      "inicio": "2026-11-20T11:27:47",
+      "estado": "ok",
+      "fin": "2026-11-20T11:28:14",
+      "segundos": 27.2
+    },
+    "preparar": {
+      "inicio": "2026-11-20T11:28:24",
+      "estado": "ok",
+      "fin": "2026-11-20T11:28:38",
+      "segundos": 14.3
+    },
+    "tipologias": {
+      "inicio": "2026-11-20T11:28:38",
+      "estado": "ok",
+      "fin": "2026-11-20T11:28:39",
+      "segundos": 0.2
+    },
+    "dominios": {
+      "inicio": "2026-11-20T11:28:39",
+      "estado": "ok",
+      "fin": "2026-11-20T11:28:39",
+      "segundos": 0.7
+    },
+    "etl": {
+      "inicio": "2026-11-20T11:46:52",
+      "estado": "ok",
+      "fin": "2026-11-20T11:47:56",
+      "segundos": 63.8
+    },
+    "fix": {
+      "inicio": "2026-11-20T11:47:56",
+      "estado": "ok",
+      "fin": "2026-11-20T11:48:12",
+      "segundos": 16.4
+    },
+    "verificar": {
+      "inicio": "2026-11-20T11:48:12",
+      "estado": "ok",
+      "fin": "2026-11-20T11:48:13",
+      "segundos": 1.0
+    },
+    "exportar": {
+      "estado": "interrumpida",
+      "nota": "corrida detenida por falta de memoria del equipo (2026-11-20); XTF parcial eliminado"
+    },
+    "validar": {
+      "estado": "interrumpida",
+      "nota": "corrida detenida por falta de memoria del equipo (2026-11-20); XTF parcial eliminado"
+    }
+  },
+  "fuente": {
+    "bd": "acc_mayo_2023",
+    "esquema": "cun25168",
+    "dump": "insumos/lote_25/chaguani_acc_mayo_2023_cun25168.dump",
+    "dump_sha256": "cbfdbed788583c86730ccd022a7ca992e435ba8261281b0349a2db4fac8a9679",
+    "dump_fecha": "2026-11-20T11:28:14",
+    "tipologias": {
+      "bd": "acc_2024",
+      "vigencia": 2023,
+      "registros": 57,
+      "sha256": {
+        "insumos/lote_25/chaguani_acc_2024_tb_valortipologia.tsv": "c9d6f57177583d7eeaab513ffd7849b75792e16b1f52d90a27e2ac09d496c555",
+        "insumos/lote_25/chaguani_acc_2024_cuc_tipologiatipo.tsv": "112880bdca5fd3dac691ba1de35954daf61df18660cbd31e120d7781947bfb34"
+      }
+    }
+  },
+  "estado": "interrumpida en exportar",
+  "metricas": {
+    "avaluo_origen": 291067399000.0,
+    "avaluo_destino": 291067399000.0,
+    "predios_con_avaluo_vigencia": 2718,
+    "predios_migrados": 2718,
+    "avaluos_duplicados_vigencia": 0,
+    "copropiedad_origen": 48,
+    "copropiedad_destino": 48,
+    "zh_modificadas_vs_backup": 0,
+    "predios_origen_total": 2718,
+    "predios_cancelados_xtf_ref": 0,
+    "predios_sin_unidad_espacial": 18,
+    "copropiedad_matrices_coef_distinto_1": 0,
+    "interesados_origen_total": 2827,
+    "interesados_sin_derecho_migrado_excluidos": 0,
+    "imputado_documento_sin_dato": 0,
+    "imputado_interesado_placeholder": 0,
+    "imputado_rrrfuente_desde_unidadfuente": 3,
+    "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
+    "imputado_area_terreno_geometrica": 0,
+    "excluido_uc_sin_construccion_o_caract": 0,
+    "excluido_nomenclatura_sin_tipo_o_numero": 0,
+    "excluido_linderos_sin_ue_migrada": 0,
+    "vigencia_zhf_rural": 2023,
+    "vigencia_zhf_urbana": 2023,
+    "vigencia_zhg_rural": 2023,
+    "vigencia_zhg_urbana": 2023,
+    "conteo.av_tipologiaconstruccion": 13,
+    "conteo.av_zonahomogeneafisicarural": 409,
+    "conteo.av_zonahomogeneafisicaurbana": 34,
+    "conteo.av_zonahomogeneageoeconomicarural": 8,
+    "conteo.av_zonahomogeneageoeconomicaurbana": 13,
+    "conteo.cc_limitemunicipio": 2,
+    "conteo.cc_manzana": 25,
+    "conteo.cc_perimetrourbano": 1,
+    "conteo.cc_sectorrural": 2,
+    "conteo.cc_sectorurbano": 1,
+    "conteo.cc_vereda": 15,
+    "conteo.col_masccl": 15627,
+    "conteo.col_menosccl": 219,
+    "conteo.col_miembros": 2081,
+    "conteo.col_puntoccl": 100207,
+    "conteo.col_rrrfuente": 4741,
+    "conteo.col_uebaunit": 13742,
+    "conteo.col_unidadfuente": 2725,
+    "conteo.extarchivo": 2065,
+    "conteo.extdireccion": 3002,
+    "conteo.extreferenciaregistralsistemaantiguo": 95,
+    "conteo.lc_agrupacioninteresados": 688,
+    "conteo.lc_calificacionnoconvencional": 2451,
+    "conteo.lc_caracteristicasunidadconstruccion": 5546,
+    "conteo.lc_construccion": 5328,
+    "conteo.lc_datosadicionaleslevantamientocatastral": 2717,
+    "conteo.lc_datosphcondominio": 1,
+    "conteo.lc_derecho": 2718,
+    "conteo.lc_fuenteadministrativa": 7463,
+    "conteo.lc_interesado": 2827,
+    "conteo.lc_lindero": 7604,
+    "conteo.lc_ofertasmercadoinmobiliario": 35,
+    "conteo.lc_predio": 2718,
+    "conteo.lc_predio_copropiedad": 48,
+    "conteo.lc_predio_informalidad": 219,
+    "conteo.lc_puntolevantamiento": 25189,
+    "conteo.lc_puntolindero": 89992,
+    "conteo.lc_servidumbretransito": 2,
+    "conteo.lc_terreno": 2652,
+    "conteo.lc_tipologiaconstruccion": 3095,
+    "conteo.lc_unidadconstruccion": 5760
+  }
+}

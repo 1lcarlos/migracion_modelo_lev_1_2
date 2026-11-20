@@ -1,0 +1,9 @@
+dominio;valor_origen;valor_destino;decision
+lc_condicionprediotipo;Mejora;Informal;Nemocón 2026-10-14: 'Mejora' no existe en LC_CondicionPredioTipo v1.2
+lc_interesadodocumentotipo;NUIP;Registro_Civil;Tibacuy: NUIP no existe en LC_InteresadoDocumentoTipo v1.2
+lc_sexotipo;Otro;Sin_Determinar;Sutatausa: 'Otro' no existe en LC_SexoTipo v1.2
+lc_sexotipo;No_Binario;Sin_Determinar;Nemocón 2026-10-14: 'No_Binario' no existe en LC_SexoTipo v1.2
+lc_resultadovisitatipo;No permitieron acceso;No_Permitieron_Acceso;Texto libre del gestor -> ilicode
+lc_resultadovisitatipo;No hay nadie;No_Hay_Nadie;Texto libre del gestor -> ilicode
+lc_resultadovisitatipo;Menor de edad;Menor_Edad;Texto libre del gestor -> ilicode
+lc_resultadovisitatipo;Zona de difícil acceso;Zona_Dificil_Acceso;Texto libre del gestor -> ilicode
