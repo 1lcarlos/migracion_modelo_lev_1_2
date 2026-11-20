@@ -115,7 +115,7 @@ terminal propia (no como tarea en segundo plano de Claude Code, que la detiene s
 
 ### Avance del lote (2026-11-20, pausa pedida por el usuario tras Vergara)
 
-Válidos con ilivalidator (11): Chaguaní, Nemocón, Quipile (piloto), Tibacuy, Quebradanegra, Nocaima, Sutatausa,
+Válidos con ilivalidator (10): Chaguaní, Nemocón, Quipile (piloto), Tibacuy, Quebradanegra, Nocaima, Sutatausa,
 Tausa, Tibirita, Vergara. Detalle en `salida/lote_25/resumen_lote.csv`.
 
 Reglas globales agregadas durante el lote (ver `03_...`): linderos con < 2 puntos se excluyen (Nocaima 7);
