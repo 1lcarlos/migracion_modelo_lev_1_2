@@ -2,6 +2,8 @@
 -- ETL plantilla: <esq> (gestor) -> lev_cat_12 (LADM-COL Lev Cat v1.2)
 -- Genera datos listos para exportar a XTF con ili2pg.
 -- Parámetros psql (-v): esq, mun, prefijo, vigencia, razon_municipio, nit_municipio
+--   esq_tipologia (opcional): esquema del que se leen tb_valortipologia/cuc_tipologiatipo
+--   (por defecto esq; Sutatausa: backup 2026 cargado como esquema auxiliar)
 --   psql -v ON_ERROR_STOP=1 -v esq=cun25862 -v mun=vergara -v prefijo=VERGARA_ \
 --        -v vigencia=2023 -v razon_municipio= -v nit_municipio= -f etl/plantilla/01_migracion.sql
 -- Estrategia de IDs: t_id = offset_cien_millones + id_origen (exige id origen < 100.000.000).
@@ -9,6 +11,7 @@
 -- ============================================================
 \if :{?razon_municipio} \else \set razon_municipio '' \endif
 \if :{?nit_municipio} \else \set nit_municipio '' \endif
+\if :{?esq_tipologia} \else \set esq_tipologia :esq \endif
 
 -- Guarda: la estrategia de offsets requiere id origen < 100.000.000 en toda tabla migrada
 SELECT set_config('mig.esq', :'esq', false);
@@ -28,7 +31,8 @@ BEGIN
                'cc_nomenclaturavial','cc_perimetrourbano','cc_sectorrural','cc_sectorurbano','cc_vereda',
                'gc_lindero','gc_puntolindero','gc_puntolevantamiento','col_puntoccl','col_masccl',
                'col_menosccl','gc_fuenteespacial','extarchivo','gc_predio_informalidad',
-               'extreferenciaregistralsistemaantiguo')
+               'extreferenciaregistralsistemaantiguo','gc_datosphcondominio','gc_servidumbretransito',
+               'gc_prediocopropiedad')
   LOOP
     EXECUTE format('SELECT max(id) FROM %I.%I', esq, r.table_name) INTO mx;
     IF mx >= 100000000 THEN
@@ -76,7 +80,9 @@ TRUNCATE lev_cat_12.col_uebaunit, lev_cat_12.col_rrrfuente, lev_cat_12.col_miemb
   lev_cat_12.col_puntoccl, lev_cat_12.col_masccl, lev_cat_12.col_menosccl,
   lev_cat_12.lc_fuenteespacial, lev_cat_12.col_baunitfuente, lev_cat_12.extarchivo,
   lev_cat_12.lc_predio_informalidad, lev_cat_12.extreferenciaregistralsistemaantiguo,
-  lev_cat_12.lc_contactovisita, lev_cat_12.lc_estructuranovedadnumeropredial
+  lev_cat_12.lc_contactovisita, lev_cat_12.lc_estructuranovedadnumeropredial,
+  lev_cat_12.lc_datosphcondominio, lev_cat_12.lc_servidumbretransito,
+  lev_cat_12.lc_predio_copropiedad
   CASCADE;
 DELETE FROM lev_cat_12.t_ili2db_basket;
 DELETE FROM lev_cat_12.t_ili2db_dataset;
@@ -93,7 +99,7 @@ INSERT INTO lev_cat_12.t_ili2db_basket(t_id, dataset, topic, t_ili_tid, attachme
 -- ------------------------------------------------------------
 -- Universo de migración (filtro por vigencia y exclusión de huérfanos)
 -- ------------------------------------------------------------
-DROP TABLE IF EXISTS mig_predio, mig_terreno, mig_constr, mig_uc, mig_caract, mig_fadm, mig_fesp,
+DROP TABLE IF EXISTS mig_predio, mig_terreno, mig_constr, mig_uc, mig_caract, mig_fadm, mig_fesp, mig_serv,
   map_puntotipo, map_acuerdo, map_foto, map_metodo, map_puntolev;
 
 -- Predios con avalúo de la vigencia
@@ -107,6 +113,12 @@ JOIN :"esq".extavaluo a ON a.gc_predio_avaluo = p.id AND date_part('year',a.vige
 CREATE TEMP TABLE mig_terreno AS
 SELECT DISTINCT t.id FROM :"esq".gc_terreno t
 JOIN :"esq".col_uebaunit u ON u.ue_gc_terreno=t.id
+JOIN mig_predio p ON p.id=u.unidad;
+
+-- Servidumbres de tránsito ligadas a un predio migrado
+CREATE TEMP TABLE mig_serv AS
+SELECT DISTINCT s.id FROM :"esq".gc_servidumbretransito s
+JOIN :"esq".col_uebaunit u ON u.ue_gc_servidumbretransito=s.id
 JOIN mig_predio p ON p.id=u.unidad;
 
 -- Unidades de construcción válidas: con predio directo, con construcción y características
@@ -134,7 +146,12 @@ CREATE TEMP TABLE mig_fadm AS
 SELECT DISTINCT f.id FROM :"esq".gc_fuenteadministrativa f
 JOIN :"esq".col_rrrfuente r ON r.fuente_administrativa=f.id
 JOIN :"esq".gc_derecho d ON d.id=r.rrr_gc_derecho
-JOIN mig_predio p ON p.id=d.baunit;
+JOIN mig_predio p ON p.id=d.baunit
+UNION
+-- ... y las ligadas directamente al predio (col_unidadfuente; Nemocón: única fuente de 2.903 derechos)
+SELECT f.id FROM :"esq".gc_fuenteadministrativa f
+JOIN :"esq".col_unidadfuente u ON u.fuente_administrativa=f.id
+JOIN mig_predio p ON p.id=u.unidad;
 
 -- ------------------------------------------------------------
 -- 1. LC_Predio  (t_id = 1M + id)
@@ -157,7 +174,9 @@ SELECT 100000000+p.id, 1, md5(:'mun'||'_lc_predio'||p.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.col_unidadadministrativabasicatipo e
     WHERE e.thisclass='Modelo_Aplicacion_LADMCOL_Lev_Cat_V1_2.LC_PredioTipo'
       AND e.ilicode='Predio.'||COALESCE(dt.text_code,'Privado')),
-  (SELECT e.t_id FROM lev_cat_12.lc_condicionprediotipo e WHERE e.ilicode=dc.text_code),
+  -- 'Mejora' no existe en LC_CondicionPredioTipo v1.2 (Nemocón): se homologa a Informal
+  (SELECT e.t_id FROM lev_cat_12.lc_condicionprediotipo e
+    WHERE e.ilicode=CASE WHEN dc.text_code='Mejora' THEN 'Informal' ELSE dc.text_code END),
   (SELECT e.t_id FROM lev_cat_12.lc_destinacioneconomicatipo e WHERE e.ilicode=dd.text_code),
   (SELECT e.t_id FROM lev_cat_12.lc_clasesuelotipo e WHERE e.ilicode=ds.text_code),
   (SELECT e.t_id FROM lev_cat_12.lc_categoriasuelotipo e WHERE e.ilicode=dcat.text_code),
@@ -207,7 +226,8 @@ INSERT INTO lev_cat_12.lc_terreno
   geometria, etiqueta, comienzo_vida_util_version, fin_vida_util_version,
   espacio_de_nombres, local_id)
 SELECT 300000000+t.id, 1, md5(:'mun'||'_lc_terreno'||t.id)::uuid,
-  round(t.area,1), NULL, left(t.codigo,17),
+  -- area_terreno es MANDATORY: si el origen no la trae se usa el área geométrica (Nemocón: 1 terreno)
+  COALESCE(round(t.area,1), round(ST_Area(t.geometria)::numeric,1)), NULL, left(t.codigo,17),
   ST_Multi(ST_CollectionExtract(ST_MakeValid(t.geometria),3)),
   t.etiqueta, t.comienzo_vida_util_version, t.fin_vida_util_version,
   COALESCE(t.espacio_de_nombres,'LC_TERRENO'), COALESCE(t.local_id, t.id::text)
@@ -329,7 +349,9 @@ SELECT 900000000+i.id, 1, md5(:'mun'||'_lc_interesado'||i.id)::uuid,
          THEN :'nit_municipio' END,
     'Sin_Dato'),
   i.primer_nombre, i.segundo_nombre, i.primer_apellido, i.segundo_apellido,
-  (SELECT e.t_id FROM lev_cat_12.lc_sexotipo e WHERE e.ilicode=sx.text_code),
+  -- 'Otro' (Sutatausa) y 'No_Binario' (Nemocón) no existen en LC_SexoTipo v1.2: se homologan a Sin_Determinar
+  (SELECT e.t_id FROM lev_cat_12.lc_sexotipo e
+   WHERE e.ilicode=CASE WHEN sx.text_code IN ('Otro','No_Binario') THEN 'Sin_Determinar' ELSE sx.text_code END),
   (SELECT e.t_id FROM lev_cat_12.lc_grupoetnicotipo e WHERE e.ilicode=ge.text_code),
   i.razon_social,
   (SELECT e.t_id FROM lev_cat_12.lc_estadociviltipo e WHERE e.ilicode=ec.text_code),
@@ -369,7 +391,9 @@ INSERT INTO lev_cat_12.lc_derecho
 SELECT 1100000000+d.id, 1, md5(:'mun'||'_lc_derecho'||d.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.lc_derechotipo e WHERE e.ilicode=dt.text_code),
   d.fraccion_derecho, d.fecha_inicio_tenencia, d.descripcion,
-  CASE WHEN d.interesado_gc_interesado IS NOT NULL THEN 900000000+d.interesado_gc_interesado END,
+  CASE WHEN d.interesado_gc_interesado IS NOT NULL THEN 900000000+d.interesado_gc_interesado
+       -- sin interesado ni agrupación en el origen: interesado placeholder (53·10⁸ + id derecho, ver abajo)
+       WHEN d.interesado_gc_agrupacioninteresados IS NULL THEN 5300000000+d.id END,
   CASE WHEN d.interesado_gc_agrupacioninteresados IS NOT NULL THEN 1000000000+d.interesado_gc_agrupacioninteresados END,
   100000000+d.baunit,
   d.comienzo_vida_util_version, d.fin_vida_util_version,
@@ -377,6 +401,19 @@ SELECT 1100000000+d.id, 1, md5(:'mun'||'_lc_derecho'||d.id)::uuid,
 FROM :"esq".gc_derecho d
 JOIN mig_predio p ON p.id=d.baunit
 LEFT JOIN :"esq".gc_derechotipo dt ON dt.id=d.tipo;
+
+-- Interesado placeholder 'SIN DATO' para derechos sin titular en el origen (Nemocón: 1, predio mejora).
+-- El modelo exige titular en el derecho y >=1 derecho por predio. Decisión del usuario 2026-10-14.
+INSERT INTO lev_cat_12.lc_interesado
+ (t_id, t_basket, t_ili_tid, tipo, tipo_documento, documento_identidad, primer_nombre, nombre,
+  comienzo_vida_util_version, espacio_de_nombres, local_id)
+SELECT 5300000000+d.id, 1, md5(:'mun'||'_lc_interesado_sin_dato'||d.id)::uuid,
+  (SELECT e.t_id FROM lev_cat_12.lc_interesadotipo e WHERE e.ilicode='Persona_Natural'),
+  (SELECT e.t_id FROM lev_cat_12.lc_interesadodocumentotipo e WHERE e.ilicode='Secuencial'),
+  'Sin_Dato', 'SIN DATO', 'SIN DATO',
+  COALESCE(d.comienzo_vida_util_version, now()), 'LC_INTERESADO', 'SIN_DATO_'||d.id
+FROM :"esq".gc_derecho d JOIN mig_predio p ON p.id=d.baunit
+WHERE d.interesado_gc_interesado IS NULL AND d.interesado_gc_agrupacioninteresados IS NULL;
 
 INSERT INTO lev_cat_12.lc_fuenteadministrativa
  (t_id, t_basket, t_ili_tid, tipo, ente_emisor, observacion, numero_fuente,
@@ -404,28 +441,81 @@ JOIN mig_fadm f ON f.id=r.fuente_administrativa
 JOIN :"esq".gc_derecho d ON d.id=r.rrr_gc_derecho
 JOIN mig_predio p ON p.id=d.baunit;
 
+-- col_unidadfuente (t_id = 51·10⁸ + id): fuente administrativa ligada al predio
+INSERT INTO lev_cat_12.col_unidadfuente (t_id, t_basket, fuente_administrativa, unidad)
+SELECT 5100000000+u.id, 1, 1200000000+u.fuente_administrativa, 100000000+u.unidad
+FROM :"esq".col_unidadfuente u
+JOIN mig_predio p ON p.id=u.unidad
+JOIN mig_fadm f ON f.id=u.fuente_administrativa;
+
+-- Derechos sin col_rrrfuente en el origen: se les asocian las fuentes del predio en col_unidadfuente
+-- (t_id = 52·10⁸ + n). El modelo exige >=1 fuente por derecho (Nemocón: 2.903). Decisión del usuario 2026-10-14.
+INSERT INTO lev_cat_12.col_rrrfuente (t_id, t_basket, fuente_administrativa, rrr_lc_derecho)
+SELECT 5200000000+row_number() OVER (ORDER BY d.id, u.fuente_administrativa), 1,
+  1200000000+u.fuente_administrativa, 1100000000+d.id
+FROM (SELECT DISTINCT d.id, d.baunit FROM :"esq".gc_derecho d JOIN mig_predio p ON p.id=d.baunit
+      WHERE NOT EXISTS (SELECT 1 FROM :"esq".col_rrrfuente r JOIN mig_fadm f ON f.id=r.fuente_administrativa
+                        WHERE r.rrr_gc_derecho=d.id)) d
+JOIN (SELECT DISTINCT unidad, fuente_administrativa FROM :"esq".col_unidadfuente) u ON u.unidad=d.baunit
+JOIN mig_fadm f ON f.id=u.fuente_administrativa;
+
 -- ------------------------------------------------------------
 -- 10. col_uebaunit (15M): terrenos, construcciones y unidades -> predio
 -- La fuente puede repetir el mismo par (ue, predio) (Vergara: 143); el OID de la
 -- asociación es el par, así que se conserva solo el de menor id.
 -- ------------------------------------------------------------
+-- 10a. LC_ServidumbreTransito (t_id = 48·10⁸ + id), antes de col_uebaunit
+INSERT INTO lev_cat_12.lc_servidumbretransito
+ (t_id, t_basket, t_ili_tid, area_servidumbre, etiqueta, geometria,
+  comienzo_vida_util_version, fin_vida_util_version, espacio_de_nombres, local_id)
+SELECT 4800000000+s.id, 1, md5(:'mun'||'_lc_servidumbre'||s.id)::uuid,
+  round(COALESCE(s.area, ST_Area(s.geometria)::numeric),1), s.etiqueta,
+  ST_Multi(ST_CollectionExtract(ST_MakeValid(s.geometria),3)),
+  COALESCE(s.comienzo_vida_util_version, make_date(:vigencia,1,1)), s.fin_vida_util_version,
+  COALESCE(s.espacio_de_nombres,'LC_SERVIDUMBRETRANSITO'), COALESCE(s.local_id, s.id::text)
+FROM :"esq".gc_servidumbretransito s JOIN mig_serv m ON m.id=s.id;
+
 INSERT INTO lev_cat_12.col_uebaunit
- (t_id, t_basket, ue_lc_terreno, ue_lc_construccion, ue_lc_unidadconstruccion, baunit)
-SELECT DISTINCT ON (ue_lc_terreno, ue_lc_construccion, ue_lc_unidadconstruccion, baunit) *
+ (t_id, t_basket, ue_lc_terreno, ue_lc_construccion, ue_lc_unidadconstruccion, ue_lc_servidumbretransito, baunit)
+SELECT DISTINCT ON (ue_lc_terreno, ue_lc_construccion, ue_lc_unidadconstruccion, ue_lc_servidumbretransito, baunit) *
 FROM (
   SELECT 1500000000+u.id AS t_id, 1 AS t_basket,
     CASE WHEN mt.id IS NOT NULL THEN 300000000+u.ue_gc_terreno END AS ue_lc_terreno,
     CASE WHEN mc.id IS NOT NULL THEN 400000000+u.ue_gc_construccion END AS ue_lc_construccion,
     CASE WHEN mu.id IS NOT NULL THEN 500000000+u.ue_gc_unidadconstruccion END AS ue_lc_unidadconstruccion,
+    CASE WHEN ms.id IS NOT NULL THEN 4800000000+u.ue_gc_servidumbretransito END AS ue_lc_servidumbretransito,
     100000000+u.unidad AS baunit
   FROM :"esq".col_uebaunit u
   JOIN mig_predio p ON p.id=u.unidad
   LEFT JOIN mig_terreno mt ON mt.id=u.ue_gc_terreno
   LEFT JOIN mig_constr mc ON mc.id=u.ue_gc_construccion
   LEFT JOIN mig_uc mu ON mu.id=u.ue_gc_unidadconstruccion
-  WHERE mt.id IS NOT NULL OR mc.id IS NOT NULL OR mu.id IS NOT NULL
+  LEFT JOIN mig_serv ms ON ms.id=u.ue_gc_servidumbretransito
+  WHERE mt.id IS NOT NULL OR mc.id IS NOT NULL OR mu.id IS NOT NULL OR ms.id IS NOT NULL
 ) x
-ORDER BY ue_lc_terreno, ue_lc_construccion, ue_lc_unidadconstruccion, baunit, t_id;
+ORDER BY ue_lc_terreno, ue_lc_construccion, ue_lc_unidadconstruccion, ue_lc_servidumbretransito, baunit, t_id;
+
+-- 10b. LC_DatosPHCondominio (t_id = 47·10⁸ + id) de predios migrados
+INSERT INTO lev_cat_12.lc_datosphcondominio
+ (t_id, t_basket, t_ili_tid, area_total_terreno, area_total_terreno_privada, area_total_terreno_comun,
+  area_total_construida, area_total_construida_privada, area_total_construida_comun,
+  numero_torres, total_unidades_privadas, lc_predio)
+SELECT 4700000000+d.id, 1, md5(:'mun'||'_lc_datosph'||d.id)::uuid,
+  d.area_total_terreno, d.area_total_terreno_privada, d.area_total_terreno_comun,
+  d.area_total_construida, d.area_total_construida_privada, d.area_total_construida_comun,
+  d.numero_torres, d.total_unidades_privadas, 100000000+d.gc_predio
+FROM :"esq".gc_datosphcondominio d JOIN mig_predio p ON p.id=d.gc_predio;
+
+-- 10c. lc_predio_copropiedad (t_id = 50·10⁸ + id): unidad predial PH/condominio -> predio matriz,
+-- con su coeficiente. Solo si ambos predios se migran. Una unidad predial tiene a lo sumo una
+-- matriz (UNIQUE unidad_predial en el modelo): si el origen repite la unidad se toma el menor id.
+INSERT INTO lev_cat_12.lc_predio_copropiedad (t_id, t_basket, unidad_predial, matriz, coeficiente)
+SELECT DISTINCT ON (c.unidad_predial)
+  5000000000+c.id, 1, 100000000+c.unidad_predial, 100000000+c.matriz, round(c.coeficiente, 10)
+FROM :"esq".gc_prediocopropiedad c
+JOIN mig_predio pu ON pu.id=c.unidad_predial
+JOIN mig_predio pm ON pm.id=c.matriz
+ORDER BY c.unidad_predial, c.id;
 
 -- ------------------------------------------------------------
 -- 11. Datos adicionales levantamiento catastral (13M)
@@ -540,28 +630,34 @@ WHERE c.ccl IS NOT NULL
   AND (c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL);
 
 INSERT INTO lev_cat_12.col_masccl
- (t_id, t_basket, ccl_mas, ue_mas_lc_terreno, ue_mas_lc_construccion, ue_mas_lc_unidadconstruccion)
+ (t_id, t_basket, ccl_mas, ue_mas_lc_terreno, ue_mas_lc_construccion, ue_mas_lc_unidadconstruccion,
+  ue_mas_lc_servidumbretransito)
 SELECT 3800000000+c.id, 1, 3400000000+c.ccl_mas,
   CASE WHEN mt.id IS NOT NULL THEN 300000000+mt.id END,
   CASE WHEN mc.id IS NOT NULL THEN 400000000+mc.id END,
-  CASE WHEN mu.id IS NOT NULL THEN 500000000+mu.id END
+  CASE WHEN mu.id IS NOT NULL THEN 500000000+mu.id END,
+  CASE WHEN ms.id IS NOT NULL THEN 4800000000+ms.id END
 FROM :"esq".col_masccl c
 LEFT JOIN mig_terreno mt ON mt.id=c.ue_mas_gc_terreno
 LEFT JOIN mig_constr mc ON mc.id=c.ue_mas_gc_construccion
 LEFT JOIN mig_uc mu ON mu.id=c.ue_mas_gc_unidadconstruccion
-WHERE c.ccl_mas IS NOT NULL AND (mt.id IS NOT NULL OR mc.id IS NOT NULL OR mu.id IS NOT NULL);
+LEFT JOIN mig_serv ms ON ms.id=c.ue_mas_gc_servidumbretransito
+WHERE c.ccl_mas IS NOT NULL AND (mt.id IS NOT NULL OR mc.id IS NOT NULL OR mu.id IS NOT NULL OR ms.id IS NOT NULL);
 
 INSERT INTO lev_cat_12.col_menosccl
- (t_id, t_basket, ccl_menos, ue_menos_lc_terreno, ue_menos_lc_construccion, ue_menos_lc_unidadconstruccion)
+ (t_id, t_basket, ccl_menos, ue_menos_lc_terreno, ue_menos_lc_construccion, ue_menos_lc_unidadconstruccion,
+  ue_menos_lc_servidumbretransito)
 SELECT 3900000000+c.id, 1, 3400000000+c.ccl_menos,
   CASE WHEN mt.id IS NOT NULL THEN 300000000+mt.id END,
   CASE WHEN mc.id IS NOT NULL THEN 400000000+mc.id END,
-  CASE WHEN mu.id IS NOT NULL THEN 500000000+mu.id END
+  CASE WHEN mu.id IS NOT NULL THEN 500000000+mu.id END,
+  CASE WHEN ms.id IS NOT NULL THEN 4800000000+ms.id END
 FROM :"esq".col_menosccl c
 LEFT JOIN mig_terreno mt ON mt.id=c.ue_menos_gc_terreno
 LEFT JOIN mig_constr mc ON mc.id=c.ue_menos_gc_construccion
 LEFT JOIN mig_uc mu ON mu.id=c.ue_menos_gc_unidadconstruccion
-WHERE c.ccl_menos IS NOT NULL AND (mt.id IS NOT NULL OR mc.id IS NOT NULL OR mu.id IS NOT NULL);
+LEFT JOIN mig_serv ms ON ms.id=c.ue_menos_gc_servidumbretransito
+WHERE c.ccl_menos IS NOT NULL AND (mt.id IS NOT NULL OR mc.id IS NOT NULL OR mu.id IS NOT NULL OR ms.id IS NOT NULL);
 
 -- ------------------------------------------------------------
 -- 12c. Fuentes espaciales (40), col_baunitfuente (41), ExtArchivo (42).
@@ -629,18 +725,36 @@ LEFT JOIN :"esq".extreferenciaregistralsistemaantiguo_tipo_referencia tr ON tr.i
 
 -- ------------------------------------------------------------
 -- 13. Submodelo Avalúos (basket 2): ZH de la vigencia y tipologías
+-- Las zonas homogéneas NO se modifican: valores y geometría tal cual del backup (decisión del
+-- usuario 2026-10-06). 02_fix solo redondea a 1 mm (precisión del modelo); 03 lo verifica.
+-- Vigencia de zonas homogéneas por tabla: la del parámetro, o con ZH_ULTIMA_VIGENCIA=si la última
+-- vigencia <= :vigencia de cada tabla (Nemocón: rurales solo con vigencia 2021). Decisión del usuario 2026-10-14.
+SELECT
+  CASE WHEN :'zh_ultima' = 'si' THEN COALESCE((SELECT max(date_part('year',x.vigencia))::int FROM :"esq".zhf_rural x
+       WHERE date_part('year',x.vigencia) <= :vigencia), :vigencia) ELSE :vigencia END AS vig_zhf_rural,
+  CASE WHEN :'zh_ultima' = 'si' THEN COALESCE((SELECT max(date_part('year',x.vigencia))::int FROM :"esq".zhf_urbana x
+       WHERE date_part('year',x.vigencia) <= :vigencia), :vigencia) ELSE :vigencia END AS vig_zhf_urbana,
+  CASE WHEN :'zh_ultima' = 'si' THEN COALESCE((SELECT max(date_part('year',x.vigencia))::int FROM :"esq".zhg_rural x
+       WHERE date_part('year',x.vigencia) <= :vigencia), :vigencia) ELSE :vigencia END AS vig_zhg_rural,
+  CASE WHEN :'zh_ultima' = 'si' THEN COALESCE((SELECT max(date_part('year',x.vigencia))::int FROM :"esq".zhg_urbana x
+       WHERE date_part('year',x.vigencia) <= :vigencia), :vigencia) ELSE :vigencia END AS vig_zhg_urbana
+\gset
+
 -- ------------------------------------------------------------
 INSERT INTO lev_cat_12.av_zonahomogeneafisicarural
  (t_id, t_basket, t_ili_tid, codigo, codigo_zona_fisica, area_homogenea_tierra,
   disponibilidad_agua, influencia_vial, uso_actual_suelo, norma_uso_suelo, vigencia, geometria)
 SELECT 1800000000+z.id, 2, md5(:'mun'||'_zhf_rural'||z.id)::uuid,
-  left(z.codigo,20), left(z.codigo_zona_fisica,20), NULLIF(z.area_homogenea_tierra,'')::numeric,
+  left(z.codigo,20), left(z.codigo_zona_fisica,20),
+  -- Algunos gestores (ej. Sutatausa) guardan el código AHT ('05FSb-61'), no un número: NULL
+  CASE WHEN btrim(z.area_homogenea_tierra) ~ '^[0-9]+([.,][0-9]+)?$'
+       THEN replace(btrim(z.area_homogenea_tierra), ',', '.')::numeric END,
   public.fx_dom('av_disponibilidadaguatipo', z.disponibilidad_agua),
   public.fx_dom('av_influenciavialruraltipo', z.influencia_vial),
   public.fx_dom('av_usosueloruraltipo', z.uso_actual_suelo),
   left(z.norma_uso_suelo,250), z.vigencia,
-  ST_Multi(ST_CollectionExtract(ST_MakeValid(z.geometria),3))
-FROM :"esq".zhf_rural z WHERE date_part('year',z.vigencia)=:vigencia;
+  ST_Force3D(ST_Multi(z.geometria))
+FROM :"esq".zhf_rural z WHERE date_part('year',z.vigencia)=:vig_zhf_rural;
 
 INSERT INTO lev_cat_12.av_zonahomogeneafisicaurbana
  (t_id, t_basket, t_ili_tid, codigo, codigo_zona_fisica, topografia, influencia_vial,
@@ -653,8 +767,8 @@ SELECT 1900000000+z.id, 2, md5(:'mun'||'_zhf_urbana'||z.id)::uuid,
   public.fx_dom('av_usosuelourbanotipo', z.uso_actual_suelo),
   left(z.norma_uso_suelo,250),
   public.fx_dom('av_tipificacionconstrucciontipo', z.tipificacion_construccion), z.vigencia,
-  ST_Multi(ST_CollectionExtract(ST_MakeValid(z.geometria),3))
-FROM :"esq".zhf_urbana z WHERE date_part('year',z.vigencia)=:vigencia;
+  ST_Force3D(ST_Multi(z.geometria))
+FROM :"esq".zhf_urbana z WHERE date_part('year',z.vigencia)=:vig_zhf_urbana;
 
 INSERT INTO lev_cat_12.av_zonahomogeneageoeconomicarural
  (t_id, t_basket, t_ili_tid, codigo, codigo_zona_geoeconomica, valor_hectarea,
@@ -662,8 +776,8 @@ INSERT INTO lev_cat_12.av_zonahomogeneageoeconomicarural
 SELECT 2000000000+z.id, 2, md5(:'mun'||'_zhg_rural'||z.id)::uuid,
   left(z.codigo,20), left(z.codigo_zona_geoeconomica,20), round(z.valor_hectarea_agropecuario,1),
   z.subzona_fisica, z.vigencia,
-  ST_Multi(ST_CollectionExtract(ST_MakeValid(z.geometria),3))
-FROM :"esq".zhg_rural z WHERE date_part('year',z.vigencia)=:vigencia;
+  ST_Force3D(ST_Multi(z.geometria))
+FROM :"esq".zhg_rural z WHERE date_part('year',z.vigencia)=:vig_zhg_rural;
 
 INSERT INTO lev_cat_12.av_zonahomogeneageoeconomicaurbana
  (t_id, t_basket, t_ili_tid, codigo, codigo_zona_geoeconomica, valor_metro,
@@ -671,25 +785,26 @@ INSERT INTO lev_cat_12.av_zonahomogeneageoeconomicaurbana
 SELECT 2100000000+z.id, 2, md5(:'mun'||'_zhg_urbana'||z.id)::uuid,
   left(z.codigo,20), left(z.codigo_zona_geoeconomica,20), round(z.valor_m2_catastral,1),
   z.subzona_fisica, z.vigencia,
-  ST_Multi(ST_CollectionExtract(ST_MakeValid(z.geometria),3))
-FROM :"esq".zhg_urbana z WHERE date_part('year',z.vigencia)=:vigencia;
+  ST_Force3D(ST_Multi(z.geometria))
+FROM :"esq".zhg_urbana z WHERE date_part('year',z.vigencia)=:vig_zhg_urbana;
 
 -- Tipologías con valor de la vigencia (solo las que existen en AV_TipologiaTipo;
 -- los anexos no tienen equivalente en el submodelo de avalúos v1.2).
 -- Algunos gestores (ej. Vergara) no traen tb_valortipologia: se omite el bloque.
-SELECT to_regclass(:'esq'||'.tb_valortipologia') IS NOT NULL AS tiene_tb_valortipologia \gset
+-- Se leen de :esq_tipologia (por defecto :esq), p. ej. un backup auxiliar que sí las trae.
+SELECT to_regclass(:'esq_tipologia'||'.tb_valortipologia') IS NOT NULL AS tiene_tb_valortipologia \gset
 \if :tiene_tb_valortipologia
 INSERT INTO lev_cat_12.av_tipologiaconstruccion
  (t_id, t_basket, t_ili_tid, tipo_tipologia, valor_unitario)
 SELECT 2200000000+v.id, 2, md5(:'mun'||'_av_tipologia'||v.id)::uuid,
   (SELECT e.t_id FROM lev_cat_12.av_tipologiatipo e WHERE e.ilicode=tt.text_code),
   round(v.valor_m2_catastral,1)
-FROM :"esq".tb_valortipologia v
-JOIN :"esq".cuc_tipologiatipo tt ON tt.id=v.tipo_tipologia
+FROM :"esq_tipologia".tb_valortipologia v
+JOIN :"esq_tipologia".cuc_tipologiatipo tt ON tt.id=v.tipo_tipologia
 WHERE date_part('year',v.vigencia)=:vigencia
   AND EXISTS (SELECT 1 FROM lev_cat_12.av_tipologiatipo e WHERE e.ilicode=tt.text_code);
 \else
-\echo 'AVISO: sin tb_valortipologia en el origen: av_tipologiaconstruccion queda vacía'
+\echo 'AVISO: sin tb_valortipologia en' :esq_tipologia ': av_tipologiaconstruccion queda vacía'
 \endif
 
 -- ------------------------------------------------------------
@@ -725,7 +840,11 @@ SELECT 2900000000+n.id, 3,
   n.numero_via, ST_Multi(ST_CollectionExtract(ST_MakeValid(n.geometria),2))
 FROM :"esq".cc_nomenclaturavial n
 LEFT JOIN :"esq".cc_nomenclaturavial_tipo_via tv ON tv.id=n.tipo_via
-WHERE n.geometria IS NOT NULL;
+-- tipo_via y numero_via son MANDATORY: se excluyen los tramos sin tipo o sin número (Nemocón: 5 sin
+-- tipo y 5 con numero_via vacío, 4 de ellos también sin tipo -> 6 de 87). ili2pg exporta '' sin
+-- reclamar, pero ilivalidator lo rechaza ("Attribute Numero_Via requires a value").
+WHERE n.geometria IS NOT NULL AND btrim(n.numero_via) <> ''
+  AND EXISTS (SELECT 1 FROM lev_cat_12.cc_nomenclaturavial_tipo_via e WHERE e.ilicode=tv.text_code);
 
 INSERT INTO lev_cat_12.cc_perimetrourbano (t_id, t_basket, codigo_departamento, codigo_municipio, tipo_avaluo, nombre_geografico, codigo_nombre, geometria)
 SELECT 3000000000+id, 3, codigo_departamento, codigo_municipio, tipo_avaluo, nombre_geografico, codigo_nombre, ST_Multi(ST_CollectionExtract(ST_MakeValid(geometria),3))
@@ -740,11 +859,13 @@ SELECT 3200000000+id, 3, codigo, ST_Multi(ST_CollectionExtract(ST_MakeValid(geom
 FROM :"esq".cc_sectorurbano WHERE geometria IS NOT NULL;
 
 INSERT INTO lev_cat_12.cc_vereda (t_id, t_basket, codigo, nombre, codigo_sector, geometria)
-SELECT 3300000000+id, 3, codigo, nombre, codigo_sector, ST_Multi(ST_CollectionExtract(ST_MakeValid(geometria),3))
+-- codigo_sector es TEXT*2: si viene el código completo (Nemocón: '254860000') se toman los 2 últimos dígitos
+SELECT 3300000000+id, 3, codigo, nombre, right(codigo_sector,2), ST_Multi(ST_CollectionExtract(ST_MakeValid(geometria),3))
 FROM :"esq".cc_vereda WHERE geometria IS NOT NULL;
 
--- Ajustar secuencia t_id por encima del máximo usado
-SELECT setval('lev_cat_12.t_ili2db_seq', 5000000000, false);
+-- Ajustar secuencia t_id por encima del máximo usado (copropiedad 50, unidadfuente 51,
+-- rrrfuente derivada 52 e interesado placeholder 53 ·10⁸)
+SELECT setval('lev_cat_12.t_ili2db_seq', 5400000000, false);
 
 COMMIT;
 
@@ -764,6 +885,9 @@ UNION ALL SELECT 'lc_derecho', count(*) FROM lev_cat_12.lc_derecho
 UNION ALL SELECT 'lc_fuenteadministrativa', count(*) FROM lev_cat_12.lc_fuenteadministrativa
 UNION ALL SELECT 'col_rrrfuente', count(*) FROM lev_cat_12.col_rrrfuente
 UNION ALL SELECT 'col_uebaunit', count(*) FROM lev_cat_12.col_uebaunit
+UNION ALL SELECT 'lc_servidumbre', count(*) FROM lev_cat_12.lc_servidumbretransito
+UNION ALL SELECT 'lc_datosph', count(*) FROM lev_cat_12.lc_datosphcondominio
+UNION ALL SELECT 'lc_predio_copropiedad', count(*) FROM lev_cat_12.lc_predio_copropiedad
 UNION ALL SELECT 'lc_datosadicionales', count(*) FROM lev_cat_12.lc_datosadicionaleslevantamientocatastral
 UNION ALL SELECT 'lc_ofertas', count(*) FROM lev_cat_12.lc_ofertasmercadoinmobiliario
 UNION ALL SELECT 'lc_lindero', count(*) FROM lev_cat_12.lc_lindero

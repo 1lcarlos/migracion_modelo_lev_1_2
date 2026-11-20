@@ -8,6 +8,7 @@
 --      -> SnapToGrid 1 mm (precisión del XTF) -> RemoveRepeatedPoints 2 mm
 --   5. Reintento con ST_Buffer(0) para polígonos que el snap deja inválidos
 --   6. Geometrías opcionales que colapsan a vacío -> NULL
+--   7. Fin_Vida_Util_Version anterior al comienzo (ObjetoVersionado.Constraint1) -> NULL
 -- Ver docs/03_decisiones_y_lecciones.md (catálogo de errores).
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.fx_limpiar_poligono(geom geometry)
@@ -57,10 +58,13 @@ UPDATE lev_cat_12.cc_vereda           SET t_ili_tid = 'cc'||t_id WHERE t_ili_tid
 UPDATE lev_cat_12.lc_terreno SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
 UPDATE lev_cat_12.lc_construccion SET geometria = public.fx_limpiar_poligono(geometria) WHERE geometria IS NOT NULL;
 UPDATE lev_cat_12.lc_unidadconstruccion SET geometria = public.fx_limpiar_poligono(geometria) WHERE geometria IS NOT NULL;
-UPDATE lev_cat_12.av_zonahomogeneafisicarural SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
-UPDATE lev_cat_12.av_zonahomogeneafisicaurbana SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
-UPDATE lev_cat_12.av_zonahomogeneageoeconomicarural SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
-UPDATE lev_cat_12.av_zonahomogeneageoeconomicaurbana SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
+UPDATE lev_cat_12.lc_servidumbretransito SET geometria = public.fx_limpiar_poligono(geometria) WHERE geometria IS NOT NULL;
+-- Zonas homogéneas: NO se limpian (no se quitan astillas ni vértices). Solo se redondean a 1 mm,
+-- la precisión de las coordenadas del modelo (el XTF las escribe así de todos modos).
+UPDATE lev_cat_12.av_zonahomogeneafisicarural SET geometria = ST_SnapToGrid(geometria, 0.001);
+UPDATE lev_cat_12.av_zonahomogeneafisicaurbana SET geometria = ST_SnapToGrid(geometria, 0.001);
+UPDATE lev_cat_12.av_zonahomogeneageoeconomicarural SET geometria = ST_SnapToGrid(geometria, 0.001);
+UPDATE lev_cat_12.av_zonahomogeneageoeconomicaurbana SET geometria = ST_SnapToGrid(geometria, 0.001);
 UPDATE lev_cat_12.cc_barrio SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
 UPDATE lev_cat_12.cc_centropoblado SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
 UPDATE lev_cat_12.cc_corregimiento SET geometria = COALESCE(public.fx_limpiar_poligono(geometria), geometria);
@@ -98,6 +102,43 @@ WHERE geometria IS NOT NULL AND NOT ST_IsValid(geometria);
 -- 6. Geometrías degeneradas que colapsan a vacío: opcionales en construcción/unidad -> NULL
 UPDATE lev_cat_12.lc_unidadconstruccion SET geometria=NULL WHERE geometria IS NOT NULL AND ST_IsEmpty(geometria);
 UPDATE lev_cat_12.lc_construccion SET geometria=NULL WHERE geometria IS NOT NULL AND ST_IsEmpty(geometria);
+
+-- 7. Fin de vida útil anterior al comienzo: viola ObjetoVersionado.Constraint1
+--    (Sutatausa v2023: predio vigente con fin 2022-09-20 y comienzo 2023-01-01) -> NULL
+DO $$
+DECLARE r record; n bigint;
+BEGIN
+  FOR r IN SELECT table_name FROM information_schema.columns
+           WHERE table_schema = 'lev_cat_12' AND column_name = 'fin_vida_util_version'
+             AND table_name IN (SELECT table_name FROM information_schema.columns
+                                WHERE table_schema = 'lev_cat_12' AND column_name = 'comienzo_vida_util_version')
+  LOOP
+    EXECUTE format('UPDATE lev_cat_12.%I SET fin_vida_util_version = NULL
+                    WHERE fin_vida_util_version < comienzo_vida_util_version', r.table_name);
+    GET DIAGNOSTICS n = ROW_COUNT;
+    IF n > 0 THEN RAISE NOTICE 'fin_vida_util_version < comienzo en %: % registros -> NULL', r.table_name, n; END IF;
+  END LOOP;
+END $$;
+
+-- 8. Caracteres de control (U+0001-U+001F, U+007F) en textos: el validador los rechaza en TEXT
+--    de datos (Nemocón: nombre y dirección de 1 predio) -> se reemplazan por espacio y se recorta
+DO $$
+DECLARE r record; n bigint;
+BEGIN
+  FOR r IN SELECT c.table_name, c.column_name FROM information_schema.columns c
+           JOIN information_schema.tables t ON t.table_schema=c.table_schema AND t.table_name=c.table_name
+           WHERE c.table_schema = 'lev_cat_12' AND t.table_type = 'BASE TABLE'
+             AND c.data_type IN ('character varying','text') AND c.table_name NOT LIKE 't_ili2db%'
+             -- no tocar los catálogos de dominio (tablas con ilicode): sus descripciones son del modelo
+             AND NOT EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema=c.table_schema
+                             AND k.table_name=c.table_name AND k.column_name='ilicode')
+  LOOP
+    EXECUTE format('UPDATE lev_cat_12.%I SET %I = btrim(regexp_replace(%I, ''[\x01-\x1f\x7f]'', '' '', ''g''))
+                    WHERE %I ~ ''[\x01-\x1f\x7f]''', r.table_name, r.column_name, r.column_name, r.column_name);
+    GET DIAGNOSTICS n = ROW_COUNT;
+    IF n > 0 THEN RAISE NOTICE 'caracteres de control en %.%: % registros', r.table_name, r.column_name, n; END IF;
+  END LOOP;
+END $$;
 
 COMMIT;
 

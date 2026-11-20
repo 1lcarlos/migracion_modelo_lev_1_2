@@ -1,0 +1,26 @@
+# Secretos
+.env
+
+# Backups de municipios (pesados, >100 MB) en la raíz
+/*.sql
+/*.backup
+
+# Binarios de herramientas (ili2pg, ilivalidator): se instalan localmente, ver .env.example
+/ili2pg/
+
+# Productos generados
+salida/**/*.xtf
+salida/**/*.INVALIDO
+logs/
+tmp/
+
+# Insumos de comparación: XTF/XML de terceros y detalle por predio (datos personales).
+# Solo se versionan los resúmenes .json
+comparacion/**/*.xtf
+comparacion/**/*.xml
+comparacion/**/*_predios.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -1,0 +1,6 @@
+# Fin de línea LF en todo el texto: bash no ejecuta scripts con CRLF (Git Bash en Windows)
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.zip binary
+*.xtf binary

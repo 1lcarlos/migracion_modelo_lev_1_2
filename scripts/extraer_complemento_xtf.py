@@ -11,6 +11,8 @@ Archivos generados:
                      segundo_apellido, domicilio, celular, correo, autoriza
   ref_caract.tsv     espacio_de_nombres, local_id, identificador, area_construida, anio_construccion,
                      uso, observaciones, avaluo_unidad_construccion
+  ref_cc.tsv         clase, codigo, nombre, codigo_sector, wkt   (CC_Barrio, CC_CentroPoblado,
+                     CC_Corregimiento, CC_LocalidadComuna; solo se cargan si el backup no las trae)
 """
 import os
 import sys
@@ -29,6 +31,26 @@ def ref(el, tag):
     return r.get("REF") if r is not None else None
 
 
+CLASES_CC = {"CC_Barrio", "CC_CentroPoblado", "CC_Corregimiento", "CC_LocalidadComuna"}
+
+
+def wkt_multisuperficie(geom):
+    """GM_MultiSurface3D (SURFACE/BOUNDARY/POLYLINE/COORD) -> WKT MULTIPOLYGON Z. Sin arcos."""
+    if geom is None:
+        return None
+    polis = []
+    for sup in geom.iter(NS + "SURFACE"):
+        anillos = []
+        for pl in sup.iter(NS + "POLYLINE"):
+            if pl.find(NS + "ARC") is not None:
+                raise ValueError("Geometría con ARC no soportada")
+            pts = [f"{c.findtext(NS + 'C1')} {c.findtext(NS + 'C2')} {c.findtext(NS + 'C3') or 0}"
+                   for c in pl.findall(NS + "COORD")]
+            anillos.append("(" + ", ".join(pts) + ")")
+        polis.append("(" + ", ".join(anillos) + ")")
+    return "MULTIPOLYGON Z (" + ", ".join(polis) + ")" if polis else None
+
+
 def esc(v):
     if v is None:
         return r"\N"
@@ -38,7 +60,7 @@ def esc(v):
 def main(xtf, out):
     os.makedirs(out, exist_ok=True)
     f = {n: open(os.path.join(out, f"ref_{n}.tsv"), "w", encoding="utf-8", newline="\n")
-         for n in ("predio", "dla", "novedad", "contacto", "caract")}
+         for n in ("predio", "dla", "novedad", "contacto", "caract", "cc")}
     w = lambda n, fila: f[n].write("\t".join(esc(v) for v in fila) + "\n")
     n = {k: 0 for k in f}
     profundidad = 0
@@ -72,6 +94,10 @@ def main(xtf, out):
                              txt(el, "Anio_Construccion"), txt(el, "Uso"),
                              txt(el, "Observaciones"), txt(el, "Avaluo_Unidad_Construccion")))
                 n["caract"] += 1
+            elif clase in CLASES_CC:
+                w("cc", (clase, txt(el, "Codigo"), txt(el, "Nombre"), txt(el, "Codigo_Sector"),
+                         wkt_multisuperficie(el.find(NS + "Geometria"))))
+                n["cc"] += 1
             el.clear()
         profundidad -= 1
     for h in f.values():

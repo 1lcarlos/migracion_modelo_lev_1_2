@@ -1,0 +1,75 @@
+{
+  "xtf": "salida/sutatausa_lev_cat_v1_2_vigencia2023.xtf",
+  "xml": "comparacion/sutatausa/Registro_catastral_25781.xml",
+  "totales": {
+    "predios_xtf": 4307,
+    "predios_xml": 4093,
+    "xtf_npn_vacio": 0,
+    "xtf_npn_duplicado": 0,
+    "xtf_homologado_vacio": 0,
+    "xtf_homologado_duplicado": 0,
+    "xml_npn_vacio": 0,
+    "xml_npn_duplicado": 0,
+    "xml_homologado_vacio": 0,
+    "xml_homologado_duplicado": 0,
+    "xml_vigencias_avaluo": {
+      "2023-01-01": 4093
+    }
+  },
+  "cruce_numero_predial": {
+    "coinciden": 4090,
+    "solo_xtf": 217,
+    "solo_xml": 3
+  },
+  "cruce_codigo_homologado": {
+    "coinciden": 4089,
+    "solo_xtf": 218,
+    "solo_xml": 4
+  },
+  "clasificacion_predios": {
+    "coincide_npn_y_homologado": 4089,
+    "solo_xml": 3,
+    "coincide_solo_npn_homologado_distinto": 1,
+    "solo_xtf": 217
+  },
+  "comparacion_atributos": {
+    "pares": 4090,
+    "avaluo_igual": 4084,
+    "matricula_igual": 4088,
+    "area_terreno_igual": 3832,
+    "area_construida_igual": 4088,
+    "destino_igual": 4090,
+    "condicion_igual": 4090,
+    "zona_igual": 4090,
+    "direccion_igual": 3460,
+    "interesados_iguales": 3972,
+    "area_terreno_distinta": 258,
+    "direccion_distinta": 630,
+    "interesados_sin_coincidencia": 55,
+    "interesados_parcial": 63,
+    "avaluo_distinto": 6,
+    "matricula_distinta": 2,
+    "area_construida_distinta": 2
+  },
+  "avaluo": {
+    "suma_xml": 385340237000.0,
+    "suma_xtf": 383091973000.0,
+    "suma_xml_predios_cruzados": 383114819000.0,
+    "suma_xtf_predios_cruzados": 383089914000.0,
+    "diferencias_n": 6,
+    "diferencias_suma": -24905000.0,
+    "diferencia_max_abs": 53287000.0
+  },
+  "destino_cambios_top": [],
+  "condicion_cambios": [],
+  "solo_xtf_por_fecha_inicio": {
+    "2023-01": 217
+  },
+  "solo_xtf_por_zona": {
+    "Rural": 194,
+    "Urbano": 23
+  },
+  "solo_xml_por_zona": {
+    "Rural": 3
+  }
+}

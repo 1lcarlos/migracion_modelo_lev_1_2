@@ -1,0 +1,325 @@
+{
+ "clases": [
+  {
+   "clase": "AV_TipologiaConstruccion",
+   "a": 21,
+   "b": 21,
+   "dif": 0
+  },
+  {
+   "clase": "AV_ZonaHomogeneaFisicaRural",
+   "a": 246,
+   "b": 246,
+   "dif": 0
+  },
+  {
+   "clase": "AV_ZonaHomogeneaFisicaUrbana",
+   "a": 24,
+   "b": 24,
+   "dif": 0
+  },
+  {
+   "clase": "AV_ZonaHomogeneaGeoeconomicaRural",
+   "a": 9,
+   "b": 9,
+   "dif": 0
+  },
+  {
+   "clase": "AV_ZonaHomogeneaGeoeconomicaUrbana",
+   "a": 14,
+   "b": 14,
+   "dif": 0
+  },
+  {
+   "clase": "CC_Barrio",
+   "a": 1,
+   "b": 1,
+   "dif": 0
+  },
+  {
+   "clase": "CC_CentroPoblado",
+   "a": 1,
+   "b": 1,
+   "dif": 0
+  },
+  {
+   "clase": "CC_LimiteMunicipio",
+   "a": 2,
+   "b": 2,
+   "dif": 0
+  },
+  {
+   "clase": "CC_Manzana",
+   "a": 35,
+   "b": 35,
+   "dif": 0
+  },
+  {
+   "clase": "CC_PerimetroUrbano",
+   "a": 1,
+   "b": 1,
+   "dif": 0
+  },
+  {
+   "clase": "CC_SectorRural",
+   "a": 1,
+   "b": 1,
+   "dif": 0
+  },
+  {
+   "clase": "CC_SectorUrbano",
+   "a": 1,
+   "b": 1,
+   "dif": 0
+  },
+  {
+   "clase": "CC_Vereda",
+   "a": 13,
+   "b": 13,
+   "dif": 0
+  },
+  {
+   "clase": "LC_AgrupacionInteresados",
+   "a": 1031,
+   "b": 1031,
+   "dif": 0
+  },
+  {
+   "clase": "LC_CalificacionNoConvencional",
+   "a": 2243,
+   "b": 2243,
+   "dif": 0
+  },
+  {
+   "clase": "LC_CaracteristicasUnidadConstruccion",
+   "a": 6175,
+   "b": 6175,
+   "dif": 0
+  },
+  {
+   "clase": "LC_Construccion",
+   "a": 4760,
+   "b": 4760,
+   "dif": 0
+  },
+  {
+   "clase": "LC_ContactoVisita",
+   "a": 4386,
+   "b": 4386,
+   "dif": 0
+  },
+  {
+   "clase": "LC_DatosAdicionalesLevantamientoCatastral",
+   "a": 4472,
+   "b": 4472,
+   "dif": 0
+  },
+  {
+   "clase": "LC_DatosPHCondominio",
+   "a": 24,
+   "b": 24,
+   "dif": 0
+  },
+  {
+   "clase": "LC_Derecho",
+   "a": 4472,
+   "b": 4472,
+   "dif": 0
+  },
+  {
+   "clase": "LC_FuenteAdministrativa",
+   "a": 4671,
+   "b": 8758,
+   "dif": 4087
+  },
+  {
+   "clase": "LC_FuenteEspacial",
+   "a": 13484,
+   "b": 13484,
+   "dif": 0
+  },
+  {
+   "clase": "LC_Interesado",
+   "a": 3981,
+   "b": 3981,
+   "dif": 0
+  },
+  {
+   "clase": "LC_Lindero",
+   "a": 14011,
+   "b": 14011,
+   "dif": 0
+  },
+  {
+   "clase": "LC_OfertasMercadoInmobiliario",
+   "a": 43,
+   "b": 43,
+   "dif": 0
+  },
+  {
+   "clase": "LC_Predio",
+   "a": 4472,
+   "b": 4472,
+   "dif": 0
+  },
+  {
+   "clase": "LC_PuntoLevantamiento",
+   "a": 31465,
+   "b": 31465,
+   "dif": 0
+  },
+  {
+   "clase": "LC_PuntoLindero",
+   "a": 87852,
+   "b": 87852,
+   "dif": 0
+  },
+  {
+   "clase": "LC_ServidumbreTransito",
+   "a": 2,
+   "b": 2,
+   "dif": 0
+  },
+  {
+   "clase": "LC_Terreno",
+   "a": 4247,
+   "b": 4247,
+   "dif": 0
+  },
+  {
+   "clase": "LC_TipologiaConstruccion",
+   "a": 3932,
+   "b": 3932,
+   "dif": 0
+  },
+  {
+   "clase": "LC_UnidadConstruccion",
+   "a": 6954,
+   "b": 6954,
+   "dif": 0
+  },
+  {
+   "clase": "col_baunitFuente",
+   "a": 13484,
+   "b": 13484,
+   "dif": 0
+  },
+  {
+   "clase": "col_masCcl",
+   "a": 26690,
+   "b": 26690,
+   "dif": 0
+  },
+  {
+   "clase": "col_menosCcl",
+   "a": 1662,
+   "b": 1662,
+   "dif": 0
+  },
+  {
+   "clase": "col_miembros",
+   "a": 2802,
+   "b": 2802,
+   "dif": 0
+  },
+  {
+   "clase": "col_puntoCcl",
+   "a": 106642,
+   "b": 106642,
+   "dif": 0
+  },
+  {
+   "clase": "col_rrrFuente",
+   "a": 4671,
+   "b": 8786,
+   "dif": 4115
+  },
+  {
+   "clase": "col_ueBaunit",
+   "a": 15963,
+   "b": 15963,
+   "dif": 0
+  },
+  {
+   "clase": "lc_predio_informalidad",
+   "a": 446,
+   "b": 446,
+   "dif": 0
+  }
+ ],
+ "llenado_diferente": [
+  {
+   "clase": "LC_FuenteAdministrativa",
+   "atributo": "Ente_Emisor",
+   "pct_a": 29.4,
+   "pct_b": 62.5
+  },
+  {
+   "clase": "LC_FuenteAdministrativa",
+   "atributo": "Fecha_Documento_Fuente",
+   "pct_a": 30.2,
+   "pct_b": 60.3
+  },
+  {
+   "clase": "LC_FuenteAdministrativa",
+   "atributo": "Numero_Fuente",
+   "pct_a": 19.2,
+   "pct_b": 57.1
+  },
+  {
+   "clase": "LC_FuenteAdministrativa",
+   "atributo": "Observacion",
+   "pct_a": 95.8,
+   "pct_b": 51.1
+  },
+  {
+   "clase": "LC_FuenteAdministrativa",
+   "atributo": "Tipo_Principal",
+   "pct_a": 6.5,
+   "pct_b": 45.4
+  }
+ ],
+ "predios": {
+  "a": 4472,
+  "b": 4472,
+  "comunes": 4472,
+  "solo_a": 0,
+  "solo_b": 0,
+  "ejemplos_solo_a": [],
+  "ejemplos_solo_b": [],
+  "duplicados_a": 0,
+  "duplicados_b": 0,
+  "avaluo_total_a": 383091973000.0,
+  "avaluo_total_b": 383091973000.0,
+  "avaluo_comunes_a": 383091973000.0,
+  "avaluo_comunes_b": 383091973000.0,
+  "atributos_distintos_en_comunes": {},
+  "ejemplos": {},
+  "solo_a_por_prefijo_zona": {},
+  "solo_b_por_prefijo_zona": {}
+ },
+ "modelos": {
+  "a": [
+   "Modelo_Aplicacion_LADMCOL_Lev_Cat_V1_2",
+   "Submodelo_Avaluos_V1_2",
+   "Submodelo_Cartografia_Catastral_V1_2"
+  ],
+  "b": [
+   "Modelo_Aplicacion_LADMCOL_Lev_Cat_V1_2",
+   "Submodelo_Avaluos_V1_2",
+   "Submodelo_Cartografia_Catastral_V1_2"
+  ]
+ },
+ "baskets": {
+  "a": [
+   "Modelo_Aplicacion_LADMCOL_Lev_Cat_V1_2.Levantamiento_Catastral",
+   "Submodelo_Avaluos_V1_2.Avaluos",
+   "Submodelo_Cartografia_Catastral_V1_2.LimitesOperativosCatastro"
+  ],
+  "b": [
+   "Modelo_Aplicacion_LADMCOL_Lev_Cat_V1_2.Levantamiento_Catastral",
+   "Submodelo_Avaluos_V1_2.Avaluos",
+   "Submodelo_Cartografia_Catastral_V1_2.LimitesOperativosCatastro"
+  ]
+ }
+}
