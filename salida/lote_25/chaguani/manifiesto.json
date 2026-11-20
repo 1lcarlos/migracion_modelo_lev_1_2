@@ -9,27 +9,9 @@
   },
   "bd_trabajo": "l25_chaguani",
   "codigo": {
-    "git_commit": "830aff751f761b67c5fb3398f716cd4e90106e1d",
+    "git_commit": "7cc7ca4ccc0f4393f5d322514a9cf60a04dcbe47",
     "git_rama": "lote-25-municipios",
-    "git_sin_commit": [
-      "env.example",
-      ".gitignore",
-      "docs/01_contexto_general.md",
-      "docs/03_decisiones_y_lecciones.md",
-      "docs/README.md",
-      "etl/plantilla/00_check_dominios.sql",
-      "etl/plantilla/01_migracion.sql",
-      "etl/plantilla/02_fix_validacion.sql",
-      "etl/plantilla/03_verificacion.sql",
-      "scripts/migrar.sh",
-      "config/homologaciones.csv",
-      "config/lote_25.csv",
-      "docs/05_lote_25_municipios.md",
-      "etl/esquema/",
-      "etl/plantilla/00_homologaciones.sql",
-      "salida/lote_25/",
-      "scripts/lote.py"
-    ],
+    "git_sin_commit": [],
     "sha256_sql": {
       "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
       "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
@@ -72,30 +54,34 @@
       "segundos": 0.7
     },
     "etl": {
-      "inicio": "2026-11-20T11:46:52",
+      "inicio": "2026-11-20T12:00:27",
       "estado": "ok",
-      "fin": "2026-11-20T11:47:56",
-      "segundos": 63.8
+      "fin": "2026-11-20T12:01:32",
+      "segundos": 65.4
     },
     "fix": {
-      "inicio": "2026-11-20T11:47:56",
+      "inicio": "2026-11-20T12:01:32",
       "estado": "ok",
-      "fin": "2026-11-20T11:48:12",
-      "segundos": 16.4
+      "fin": "2026-11-20T12:01:41",
+      "segundos": 9.4
     },
     "verificar": {
-      "inicio": "2026-11-20T11:48:12",
+      "inicio": "2026-11-20T12:01:41",
       "estado": "ok",
-      "fin": "2026-11-20T11:48:13",
-      "segundos": 1.0
+      "fin": "2026-11-20T12:01:42",
+      "segundos": 0.5
     },
     "exportar": {
-      "estado": "interrumpida",
-      "nota": "corrida detenida por falta de memoria del equipo (2026-11-20); XTF parcial eliminado"
+      "inicio": "2026-11-20T12:01:42",
+      "estado": "ok",
+      "fin": "2026-11-20T12:03:26",
+      "segundos": 104.5
     },
     "validar": {
-      "estado": "interrumpida",
-      "nota": "corrida detenida por falta de memoria del equipo (2026-11-20); XTF parcial eliminado"
+      "inicio": "2026-11-20T12:03:26",
+      "estado": "ok",
+      "fin": "2026-11-20T12:05:58",
+      "segundos": 151.8
     }
   },
   "fuente": {
@@ -114,7 +100,7 @@
       }
     }
   },
-  "estado": "interrumpida en exportar",
+  "estado": "completo",
   "metricas": {
     "avaluo_origen": 291067399000.0,
     "avaluo_destino": 291067399000.0,
@@ -184,5 +170,16 @@
     "conteo.lc_terreno": 2652,
     "conteo.lc_tipologiaconstruccion": 3095,
     "conteo.lc_unidadconstruccion": 5760
+  },
+  "xtf": {
+    "archivo": "salida/lote_25/chaguani/chaguani_lev_cat_v1_2_vigencia2023.xtf",
+    "ili2pg": "valido",
+    "log_ili2pg": "logs/lote_25/chaguani/exportar_ili2pg.log",
+    "ilivalidator": "valido",
+    "ilivalidator_errores": 0,
+    "ilivalidator_avisos": 0,
+    "log_ilivalidator": "logs/lote_25/chaguani/validar_ilivalidator.log",
+    "sha256": "28004daf5884fd6cd5e434aba14895288456591105cdfbbd6f93f61234b59e9c",
+    "bytes": 203067598
   }
 }

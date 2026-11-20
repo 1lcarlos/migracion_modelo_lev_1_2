@@ -1,8 +1,8 @@
 ﻿codigo;municipio;vigencia;actualizacion;fuente;estado;predios_migrados;avaluo;avaluo_cuadra;predios_sin_unidad_espacial;interesados_excluidos;imputado_documento_sin_dato;copropiedad_coef_distinto_1;av_tipologias;ili2pg;ilivalidator;xtf_sha256;git_commit
 25053;Arbeláez;2023;urbana;acc_mayo_2023.cun25053;sin_correr;;;;;;;;;;;;
-25168;Chaguaní;2023;urbana_rural;acc_mayo_2023.cun25168;interrumpida en exportar;2718;291067399000.0;True;18;0;0;0;13;;;;830aff751f
+25168;Chaguaní;2023;urbana_rural;acc_mayo_2023.cun25168;completo;2718;291067399000.0;True;18;0;0;0;13;valido;valido;28004daf5884fd6cd5e434aba14895288456591105cdfbbd6f93f61234b59e9c;7cc7ca4ccc
 25279;Fómeque;2023;urbana;acc_mayo_2023.cun25279;sin_correr;;;;;;;;;;;;
-25486;Nemocón;2023;urbana;acc_mayo_2023.cun25486;completo;5983;598625016000.0;True;527;0;1;6;14;valido;valido;e91eed0c8bcc32a0f82c6b30d0757da13da8e4233ea212c952f6063c5b2d6b16;830aff751f
+25486;Nemocón;2023;urbana;acc_mayo_2023.cun25486;completo;5983;598625016000.0;True;527;0;1;6;14;valido;valido;36f40b570a54ccd24f438d00e568b91b7d4b3ca8c224c68b8306290617d9043c;7cc7ca4ccc
 25489;Nimaima;2023;urbana_rural;acc_mayo_2023.cun25489;sin_correr;;;;;;;;;;;;
 25491;Nocaima;2023;urbana_rural;acc_mayo_2023.cun25491;sin_correr;;;;;;;;;;;;
 25592;Quebradanegra;2023;urbana_rural;acc_mayo_2023.cun25592;sin_correr;;;;;;;;;;;;

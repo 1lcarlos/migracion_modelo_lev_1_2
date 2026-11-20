@@ -9,29 +9,18 @@
   },
   "bd_trabajo": "l25_nemocon",
   "codigo": {
-    "git_commit": "830aff751f761b67c5fb3398f716cd4e90106e1d",
+    "git_commit": "7cc7ca4ccc0f4393f5d322514a9cf60a04dcbe47",
     "git_rama": "lote-25-municipios",
     "git_sin_commit": [
-      "env.example",
-      ".gitignore",
-      "etl/plantilla/00_check_dominios.sql",
-      "etl/plantilla/01_migracion.sql",
-      "etl/plantilla/02_fix_validacion.sql",
-      "etl/plantilla/03_verificacion.sql",
-      "scripts/migrar.sh",
-      "config/homologaciones.csv",
-      "config/lote_25.csv",
-      "etl/esquema/",
-      "etl/plantilla/00_homologaciones.sql",
-      "salida/lote_25/",
-      "scripts/lote.py"
+      "salida/lote_25/resumen_lote.csv",
+      "salida/lote_25/chaguani/chaguani_lev_cat_v1_2_vigencia2023.xtf.sha256"
     ],
     "sha256_sql": {
       "etl/plantilla/00_homologaciones.sql": "f647b9fb75de0c7a50d0dfaba8285e2009c1f3504fc305e757d4bab2e98e6273",
       "etl/plantilla/00_check_dominios.sql": "42abe135132f2377dc95adb718dab053f265849a119c66a0a85fd943d33fb60e",
-      "etl/plantilla/01_migracion.sql": "e67f95b401cb1c3ad67ae2fa79e6506e43be19f3929089e44b8622efea5d7dca",
+      "etl/plantilla/01_migracion.sql": "4338d4f6042358cd3d345be52b4f502f3e87df3238e2d3967d4658a76f7aa031",
       "etl/plantilla/02_fix_validacion.sql": "646b695dbcdcd79d4786cb291bbf4183bea8fdae9564eda5e4fb00ce8343d249",
-      "etl/plantilla/03_verificacion.sql": "9224686b5ba8d3feae3bc4833815744b85d3db7492f4f0d33e57bdbbed03924f",
+      "etl/plantilla/03_verificacion.sql": "7719f67f3a8c07ab8935aaebf63149c24511cde50f23a1c2fcdcea3d41489792",
       "etl/esquema/lev_cat_12_plantilla.sql": "e521225d3551ed268ecdc74a7654d1406081f6245a941983eb38de894d78c913",
       "config/homologaciones.csv": "d731058e28d8ec9370084d627455393ad06d8afe70d2917d0701b9f998d18f25"
     }
@@ -68,34 +57,34 @@
       "segundos": 0.4
     },
     "etl": {
-      "inicio": "2026-11-20T11:41:45",
+      "inicio": "2026-11-20T12:06:03",
       "estado": "ok",
-      "fin": "2026-11-20T11:42:07",
-      "segundos": 22.8
+      "fin": "2026-11-20T12:06:23",
+      "segundos": 20.0
     },
     "fix": {
-      "inicio": "2026-11-20T11:42:07",
+      "inicio": "2026-11-20T12:06:23",
       "estado": "ok",
-      "fin": "2026-11-20T11:42:09",
-      "segundos": 1.4
+      "fin": "2026-11-20T12:06:24",
+      "segundos": 1.0
     },
     "verificar": {
-      "inicio": "2026-11-20T11:42:09",
+      "inicio": "2026-11-20T12:06:24",
       "estado": "ok",
-      "fin": "2026-11-20T11:42:09",
-      "segundos": 0.7
+      "fin": "2026-11-20T12:06:25",
+      "segundos": 0.4
     },
     "exportar": {
-      "inicio": "2026-11-20T11:42:09",
+      "inicio": "2026-11-20T12:06:25",
       "estado": "ok",
-      "fin": "2026-11-20T11:43:12",
-      "segundos": 62.6
+      "fin": "2026-11-20T12:07:20",
+      "segundos": 55.9
     },
     "validar": {
-      "inicio": "2026-11-20T11:43:12",
+      "inicio": "2026-11-20T12:07:20",
       "estado": "ok",
-      "fin": "2026-11-20T11:43:46",
-      "segundos": 34.3
+      "fin": "2026-11-20T12:07:43",
+      "segundos": 22.4
     }
   },
   "fuente": {
@@ -114,30 +103,7 @@
       }
     }
   },
-  "avisos": {
-    "dominios_zhf_sin_equivalente": [
-      {
-        "uso": "zhf_rural.disponibilidad_agua",
-        "valor": "2",
-        "n": 8
-      },
-      {
-        "uso": "zhf_rural.disponibilidad_agua",
-        "valor": "3",
-        "n": 15
-      },
-      {
-        "uso": "zhf_rural.disponibilidad_agua",
-        "valor": "4",
-        "n": 6
-      },
-      {
-        "uso": "zhf_rural.uso_actual_suelo",
-        "valor": "16",
-        "n": 29
-      }
-    ]
-  },
+  "estado": "completo",
   "metricas": {
     "avaluo_origen": 598625016000.0,
     "avaluo_destino": 598625016000.0,
@@ -157,6 +123,7 @@
     "imputado_interesado_placeholder": 1,
     "imputado_rrrfuente_desde_unidadfuente": 2904,
     "imputado_numero_pisos_1": 0,
+    "imputado_comienzo_vida_util": 0,
     "imputado_area_terreno_geometrica": 1,
     "excluido_uc_sin_construccion_o_caract": 1,
     "excluido_nomenclatura_sin_tipo_o_numero": 6,
@@ -206,8 +173,7 @@
     "ilivalidator_errores": 0,
     "ilivalidator_avisos": 0,
     "log_ilivalidator": "logs/lote_25/nemocon/validar_ilivalidator.log",
-    "sha256": "e91eed0c8bcc32a0f82c6b30d0757da13da8e4233ea212c952f6063c5b2d6b16",
+    "sha256": "36f40b570a54ccd24f438d00e568b91b7d4b3ca8c224c68b8306290617d9043c",
     "bytes": 60486106
-  },
-  "estado": "completo"
+  }
 }

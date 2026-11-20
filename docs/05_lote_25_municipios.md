@@ -84,13 +84,17 @@ Para entregar: XTF + `.sha256` + `manifiesto.json`, generados desde un commit si
 
 Ver `salida/lote_25/resumen_lote.csv` (se regenera en cada corrida) y el manifiesto de cada municipio.
 
-### Piloto (2026-11-20)
+### Piloto (2026-11-20) — cerrado
 
-| Municipio | Predios | Avalúo (cuadra al peso) | ili2pg | ilivalidator | Nota |
-|---|---|---|---|---|---|
-| Chaguaní (2023) | 2.718 | $291.067.399.000 | válido | válido (0 errores, 0 avisos) | Detectó `Local_Id` vacío (regla global nueva). Última corrida interrumpida por falta de memoria del equipo en `exportar`: **re-ejecutar desde `etl`** |
-| Quipile (2024) | 4.632 | $411.517.087.000 | válido | válido | Detectó `comienzo_vida_util_version` nulo (regla global nueva; 30 terrenos) |
-| Nemocón (2023) | 5.983 | $598.625.016.000 | válido | válido | Generado antes de la regla de fechas: **re-ejecutar desde `etl`** para que salga del código final |
+Los tres generados con el código final (corridas en primer plano, una a la vez).
+
+| Municipio | Predios | Avalúo (cuadra al peso) | ili2pg | ilivalidator | sha256 | Nota |
+|---|---|---|---|---|---|---|
+| Chaguaní (2023) | 2.718 | $291.067.399.000 | válido | válido (0 errores, 0 avisos) | `28004daf…` | Detectó `Local_Id` vacío. Mismo sha256 en dos corridas: el proceso es determinista |
+| Quipile (2024) | 4.632 | $411.517.087.000 | válido | válido | `7a209551…` | Detectó `comienzo_vida_util_version` nulo (30 terrenos imputados) |
+| Nemocón (2023) | 5.983 | $598.625.016.000 | válido | válido | `36f40b57…` | Cambia respecto de la 1.ª corrida solo por la fecha del interesado placeholder (ya no usa `now()`) |
+
+Regla de `comienzo_vida_util_version` aprobada por el usuario el 2026-11-20.
 
 Tiempo por municipio pequeño: ~6 min (exportar ~3 min, ilivalidator ~1,5 min).
 
