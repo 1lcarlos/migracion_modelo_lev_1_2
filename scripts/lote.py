@@ -353,8 +353,10 @@ FUNCIONES = {e: globals()[f"etapa_{e}"] for e in ETAPAS}
 def info_codigo():
     def git(*a):
         p = subprocess.run(["git", *a], cwd=RAIZ, capture_output=True, text=True)
-        return p.stdout.strip()
-    sucio = [l[3:] for l in git("status", "--porcelain").splitlines() if not l.endswith(".json")]
+        return p.stdout.rstrip("\n")
+    # Solo el código que determina el XTF (etl/, config/, scripts/). Las salidas del lote (manifiestos,
+    # .sha256, resumen) cambian en cada corrida y no cuentan. Sin strip(): " M" inicia la línea de porcelain.
+    sucio = [l[3:] for l in git("status", "--porcelain", "--", "etl", "config", "scripts").splitlines() if l]
     return {"git_commit": git("rev-parse", "HEAD"), "git_rama": git("rev-parse", "--abbrev-ref", "HEAD"),
             "git_sin_commit": sucio, "sha256_sql": {s: sha256(RAIZ / s) for s in SQL_USADOS}}
 

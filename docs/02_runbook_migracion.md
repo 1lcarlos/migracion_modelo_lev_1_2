@@ -1,4 +1,11 @@
-# Runbook — Migrar un municipio nuevo
+# Runbook — Migrar un municipio con el flujo heredado (`migrar.sh`)
+
+> **Para el lote de 25 municipios (desde las BD de corte) no se usa este runbook**: ver
+> [`05_lote_25_municipios.md`](05_lote_25_municipios.md) §4 (`scripts/lote.py`). Este flujo sigue vigente para
+> migraciones a partir de un backup entregado y para la mezcla con el XTF del operador (etapas `complemento`,
+> `cancelados`, `operador`), que el lote aún no incluye. Ambos usan la misma plantilla `etl/plantilla/`.
+> Diferencias de `migrar.sh` frente a `lote.py`: clona `lev_cat_12` de una BD, valida solo con ili2pg al
+> exportar (validar también con ilivalidator antes de entregar) y no genera manifiesto.
 
 Proceso reproducible con la plantilla parametrizada (`etl/plantilla/`) y el orquestador
 `scripts/migrar.sh` (Git Bash). Probado con Vergara (2026-10-02, ~10 min en total, de los
@@ -36,12 +43,12 @@ ZH_ULTIMA_VIGENCIA=         # opcional (si): zonas homogéneas de la última vig
 ```bash
 bash scripts/migrar.sh <mun> preparar   # crea BD, extensiones, restaura backup, clona lev_cat_12
 bash scripts/migrar.sh <mun> auxiliar   # opcional: BACKUP_AUX -> esquema ESQ_AUX (vía BD temporal)
-bash scripts/migrar.sh <mun> dominios   # códigos origen sin equivalente en v1.2
-bash scripts/migrar.sh <mun> etl        # 01_migracion (transacción única, re-ejecutable)
+bash scripts/migrar.sh <mun> dominios   # 00_homologaciones + códigos origen sin equivalente en v1.2
+bash scripts/migrar.sh <mun> etl        # 00_homologaciones + 01_migracion (transacción única, re-ejecutable)
 bash scripts/migrar.sh <mun> complemento # 04: solo si config define XTF_COMPLEMENTO (re-ejecutar tras cada etl)
 bash scripts/migrar.sh <mun> cancelados # 05: solo si INCLUIR_CANCELADOS=si (re-ejecutar tras cada etl)
 bash scripts/migrar.sh <mun> operador   # 06: solo si COMPLEMENTO_OPERADOR=si (re-ejecutar tras cada etl y tras cancelados)
-bash scripts/migrar.sh <mun> fix        # 02_fix_validacion (verificación final debe dar 0 en todo)
+bash scripts/migrar.sh <mun> fix        # 02_fix_validacion (aborta sin commit si un control no da 0)
 bash scripts/migrar.sh <mun> exportar   # ili2pg export + validación; genera .sha256 si es válido
 bash scripts/migrar.sh <mun> verificar  # cuadre de avalúos y conteos origen vs destino
 ```
@@ -56,7 +63,7 @@ los dominios del municipio ya fueron revisados.
   (ver `logs/restore_<mun>.log`).
 - **dominios**: `gc_predio.tipo` (`Privado`, `Publico.*`) es falso positivo (el ETL antepone
   `Predio.`); `tb_valortipologia.tipo_anexo` es esperado. Cualquier otro código: decidir la
-  homologación ANTES de migrar, implementarla en la plantilla y documentarla en `03_...`.
+  homologación ANTES de migrar, agregarla a `config/homologaciones.csv` y documentarla en `03_...`.
 - **etl**: aborta si alguna tabla origen tiene `id >= 100.000.000` (estrategia de offsets).
   Si el origen no tiene `tb_valortipologia`, avisa y deja `av_tipologiaconstruccion` vacía.
 - **auxiliar**: solo si la config define `BACKUP_AUX` y `ESQ_AUX`. Carga el esquema del segundo
@@ -83,14 +90,15 @@ los dominios del municipio ya fueron revisados.
   `ref_ope.rep_terrenos_no_cruzados`. La etapa `cancelados` borra t_id >= 6·10⁹ (incluye lo de esta
   etapa): si se re-ejecuta, correr `operador` después.
 - **fix**: los `NOTICE: Self-intersection` son informativos (polígonos que se reparan);
-  lo que importa es la tabla final, toda en 0.
+  lo que importa es la tabla final, toda en 0. Si algún control no da 0, aborta sin hacer commit.
 - **exportar**: `XTF VÁLIDO` solo si el log termina en `...export done`. Si sale
   `XTF INVÁLIDO`, el script resume los errores; corregir en la plantilla (preventivo y global,
   no registro a registro), re-ejecutar `etl fix exportar`.
-- **verificar**: `avaluo_origen` = `avaluo_destino` al peso; `predios_migrados` =
+- **verificar** (aborta si algo de lo siguiente no se cumple): `avaluo_origen` = `avaluo_destino` al peso; `predios_migrados` =
   `predios_con_avaluo_vigencia`; `avaluos_duplicados_vigencia` = 0; `zh_modificadas_vs_backup` = 0
   (zonas homogéneas idénticas al backup en valores y geometría redondeada a 1 mm);
-  `copropiedad_origen` = `copropiedad_destino` y `copropiedad_matrices_coef_distinto_1` = 0.
+  `copropiedad_origen` = `copropiedad_destino`. `copropiedad_matrices_coef_distinto_1` es informativo
+  (Nemocón: 6, calidad de la fuente). Con las etapas de complemento los conteos de predios incluyen los cancelados.
 
 ## 3. Cierre
 
@@ -98,4 +106,6 @@ los dominios del municipio ya fueron revisados.
 2. Registrar decisiones/homologaciones nuevas en `03_decisiones_y_lecciones.md`.
 3. Si existe un XTF previo del municipio, compararlo:
    `python scripts/comparar_xtf.py <xtf_previo> salida/<xtf> --salida comparacion/informe_<mun>.json`.
-4. Entregar el XTF junto con su `.sha256`.
+4. Validar con ilivalidator 1.15.0 (`java -jar ili2pg/ilivalidator-1.15.0/ilivalidator-1.15.0.jar --modeldir
+   LADM_COL_Lev_Cat_v1_2_docs <xtf>`; debe terminar en `...validation done`).
+5. Entregar el XTF junto con su `.sha256`.

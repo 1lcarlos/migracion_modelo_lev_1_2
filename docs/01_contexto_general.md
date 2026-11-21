@@ -1,12 +1,14 @@
 # Contexto general del proyecto
 
-> Documento de arranque para retomar el trabajo. Última actualización: 2026-10-02.
+> Documento de arranque para retomar el trabajo. Última actualización: 2026-11-21.
+> **Trabajo en curso: lote de 25 municipios → [`05_lote_25_municipios.md`](05_lote_25_municipios.md) §7 (retomar aquí).**
 
 ## Objetivo
 
 Migrar los datos catastrales de municipios gestionados en el "modelo gestor" (esquemas
 PostgreSQL `cunXXXXX` con tablas `gc_*`, `extavaluo`, `zhf_*`, `cc_*`, etc.) al modelo
-**LADM-COL Levantamiento Catastral v1.2** y generar un **XTF INTERLIS validado** por ili2pg.
+**LADM-COL Levantamiento Catastral v1.2** y generar un **XTF INTERLIS validado** (ilivalidator 1.15.0;
+las migraciones anteriores al lote se validaron con ili2pg al exportar).
 Solo se migran los predios con avalúo de **una vigencia** (parámetro `VIGENCIA` por
 municipio; filtro `date_part('year', extavaluo.vigencia) = <VIGENCIA>`).
 
@@ -16,7 +18,13 @@ Proceso actual: `python scripts/lote.py` sobre `config/lote_25.csv`, extrayendo 
 `acc_mayo_2023` (vigencia 2023) y `acc_2024` (vigencia 2024), sin mezcla con XTF del operador. Salida en
 `salida/lote_25/<mun>/` con manifiesto. Detalle, decisiones y estado: [`05_lote_25_municipios.md`](05_lote_25_municipios.md).
 
-## Municipios procesados (antes del lote, con backups y XTF del operador)
+Estado al 2026-11-21 (en pausa): 10 de 25 válidos con ilivalidator, 3 detenidos por decisiones pendientes del
+usuario (Nimaima, Guatavita, Supatá; afectan también a Tocaima, Anapoima y Subachoque), 9 sin correr. Ningún
+XTF del lote es entregable aún: falta la corrida final desde un commit limpio.
+
+## Municipios procesados antes del lote (flujo heredado `migrar.sh`, backups y XTF del operador)
+
+Estos XTF ya se entregaron y no se modifican; el lote reprocesa los cinco municipios en `salida/lote_25/`.
 
 | Municipio | Código DANE | Esquema origen | BD PostgreSQL | Vigencia | Prefijo id_operacion | Dataset | XTF |
 |---|---|---|---|---|---|---|---|
@@ -36,7 +44,9 @@ destino (`lev_cat_12`, estructura generada por ili2pg 5.5.1 a partir de los mode
   SRS de trabajo: **9377** (CTM12).
 - **psql / pg_dump**: `C:\Program Files\PostgreSQL\16\bin\`
 - **Java 8** (requerido por ili2pg): en el PATH.
-- **ili2pg 5.5.1**: `C:\ladm_col\desarrollos\creacion_modelos_fisicos\windows_version\ili2pg\ili2pg-5.5.1\ili2pg-5.5.1.jar`
+- **ili2pg 5.5.1**: ruta en `ILI2PG_JAR` (`.env`); hoy `C:\ladm_col\desarrollos\creacion_modelos_fisicos\windows_version\ili2pg\ili2pg-5.5.1\ili2pg-5.5.1.jar`.
+- **ilivalidator 1.15.0**: `ili2pg/ilivalidator-1.15.0/ilivalidator-1.15.0.jar` (copia local no versionada; `ILIVALIDATOR_JAR`).
+- **Memoria**: equipo de 16 GB con ~2,5 GB libres en corrida; `JAVA_XMX` opcional en `.env` para municipios grandes.
 - **Modelos .ili**: carpeta `LADM_COL_Lev_Cat_v1_2_docs\` (se usa como `--modeldir`).
 
 ## Estructura del proyecto
@@ -71,7 +81,7 @@ migracion_modelo_lev_1_2/
 ├── insumos/lote_25/              # Dumps por esquema extraídos de las BD de corte (no versionados)
 ├── ili2pg/                       # ili2pg 5.5.1 e ilivalidator 1.15.0 locales (no versionados)
 ├── salida/                       # XTF generados + .sha256 de los válidos (lote: salida/lote_25/<mun>/)
-├── logs/                         # Logs de restauración y export de ili2pg
+├── logs/                         # Logs (lote: logs/lote_25/<mun>/<etapa>.log)
 ├── docs/                         # Esta documentación
 └── *.sql                         # Backups pg_dump de los municipios (no versionados)
 ```
@@ -96,17 +106,21 @@ migracion_modelo_lev_1_2/
 - **t_ili_tid** (OID UUID): `md5('<mun>_<tabla>' || id)::uuid` — el prefijo del municipio
   evita colisiones de OID entre XTF. (Tibirita se generó sin prefijo.)
 - **3 baskets**: (1) Levantamiento_Catastral, (2) Avaluos, (3) LimitesOperativosCatastro.
-- El esquema `lev_cat_12` se **clona** desde `BD_PLANTILLA_LEV12` (`.env`) para garantizar
-  estructura y t_id de catálogos idénticos; el ETL trunca los datos y reconstruye.
+- El esquema `lev_cat_12` sale de una plantilla fija para garantizar estructura y t_id de catálogos idénticos:
+  `lote.py` carga `etl/esquema/lev_cat_12_plantilla.sql` (versionado); `migrar.sh` lo clona desde
+  `BD_PLANTILLA_LEV12` (`.env`). El ETL trunca los datos y reconstruye.
 
 > **Importante**: ili2pg escribe el XTF aunque la validación falle. `scripts/migrar.sh`
 > solo da por válido el XTF si el log termina en `Info: ...export done`; en ese caso genera
-> `<xtf>.sha256`. Si falla, renombra el archivo a `.INVALIDO`.
+> `<xtf>.sha256`. Si falla, renombra el archivo a `.INVALIDO`. `scripts/lote.py` exporta sin validar a
+> `.parcial.xtf` y solo genera `.sha256` si ilivalidator termina en `...validation done`.
 
 ## Pendientes / ideas
 
-- [ ] Desarrollar la herramienta de seguimiento de migraciones (ver `04_propuesta_herramienta_seguimiento.md`).
+- [ ] **Lote de 25 municipios**: decisiones D1–D3 y pasos de cierre en `05_lote_25_municipios.md` §6–§7.
+- [ ] Desarrollar la herramienta de seguimiento de migraciones (ver `04_propuesta_herramienta_seguimiento.md`);
+  los manifiestos del lote ya capturan buena parte de las métricas.
 - [x] Unificar los ETL por municipio en una plantilla parametrizada (2026-10-02).
-- [ ] Evaluar si los predios sin unidad espacial requieren gestión con la fuente (Tibacuy 277, Vergara 85, Sutatausa 3).
+- [ ] Evaluar si los predios sin unidad espacial requieren gestión con la fuente (Tibacuy 277, Vergara 85, Sutatausa 3, Nemocón 527).
 - [ ] Sutatausa: aplicar `correcciones/ejecutar_correcciones.sh` en producción, sacar backup nuevo, apuntar `BACKUP` de `sutatausa_v2023b.env` a ese backup y regenerar el XTF (`migrar.sh sutatausa_v2023b`). Ver `D:/ACC/xtf_reporte_SNR/Sutatausa``/README.md`.
-- [ ] Vergara: el gestor no trae `tb_valortipologia` → `av_tipologiaconstruccion` vacía. Confirmar si hay otra fuente de valores por tipología.
+- [x] Vergara: el gestor no trae `tb_valortipologia`. En el lote se toma la vigencia 2023 de `acc_2024` (decisión 2026-11-20); el XTF entregado sigue sin tipologías.

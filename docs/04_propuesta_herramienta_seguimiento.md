@@ -1,6 +1,11 @@
 # Propuesta — Herramienta de seguimiento de migraciones LADM-COL
 
 > Propuesta de desarrollo. Estado: borrador para discusión. 2026-08-28.
+>
+> Nota 2026-11-21: `scripts/lote.py` ya registra por corrida, en `salida/lote_25/<mun>/manifiesto.json` y
+> `resumen_lote.csv`, la fuente (sha256 del dump), el código (commit, sha256 de cada SQL), los tiempos por etapa,
+> las métricas de origen/destino, las imputaciones y exclusiones y el resultado de ilivalidator. La herramienta
+> debería leer esos manifiestos en vez de recalcular desde las BD (ver `05_lote_25_municipios.md`).
 
 ## 1. Problema
 

@@ -112,8 +112,13 @@ UNION ALL SELECT 'excluido_uc_sin_construccion_o_caract', count(DISTINCT uc.id) 
 UNION ALL SELECT 'excluido_nomenclatura_sin_tipo_o_numero',
   (SELECT count(*) FROM :"esq".cc_nomenclaturavial WHERE geometria IS NOT NULL)
   - (SELECT count(*) FROM lev_cat_12.cc_nomenclaturavial WHERE t_id >= 2900000000 AND t_id < 3000000000)
+-- Excluidos = (sin UE migrada) ∪ (< 2 puntos). Todo lindero con < 2 puntos se excluye, así que
+-- sin_ue_migrada (con >= 2 puntos) = excluidos - menos_2_puntos; las dos métricas no se solapan.
 UNION ALL SELECT 'excluido_linderos_sin_ue_migrada',
   (SELECT count(*) FROM :"esq".gc_lindero) - (SELECT count(*) FROM lev_cat_12.lc_lindero WHERE t_id < 3500000000)
+  - (SELECT count(*) FROM :"esq".gc_lindero l
+      WHERE (SELECT count(*) FROM :"esq".col_puntoccl c WHERE c.ccl = l.id
+             AND (c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL)) < 2)
 UNION ALL SELECT 'excluido_linderos_menos_2_puntos', count(*) FROM :"esq".gc_lindero l
   WHERE (SELECT count(*) FROM :"esq".col_puntoccl c WHERE c.ccl = l.id
          AND (c.punto_gc_puntolindero IS NOT NULL OR c.punto_gc_puntolevantamiento IS NOT NULL)) < 2

@@ -4,6 +4,11 @@ Registro de las decisiones de homologación tomadas por municipio y el catálogo
 de validación con su causa raíz y solución probada. **Consultar antes de resolver un error
 nuevo**: casi todo lo que falla ya falló antes.
 
+Las secciones por municipio (Tibacuy, Tibirita, Vergara, Sutatausa, Nemocón) registran las migraciones hechas
+con el flujo heredado (`scripts/migrar.sh`, backups y XTF del operador). Las reglas que hoy aplican a todos están
+en "Comunes a todos los municipios" y "Reglas globales del lote de 25 municipios"; donde una regla del lote
+reemplaza lo dicho en una sección por municipio, se indica.
+
 ## Decisiones de homologación
 
 ### Comunes a todos los municipios
@@ -14,23 +19,29 @@ nuevo**: casi todo lo que falla ya falló antes.
 | `gc_predio.tipo` (`Privado`, `Publico.*`) | Se antepone `Predio.` al ilicode | El dominio destino `col_unidadadministrativabasicatipo` usa ruta completa (`Predio.Privado`) |
 | Predios sin terreno/construcción en `col_uebaunit` | Se migran igual | El modelo permite predios sin unidad espacial (informales, mejoras); queda registrado el conteo |
 | Geometrías vacías tras limpieza (área < tolerancia) en construcción/unidad | `geometria = NULL` | El atributo es opcional en esas clases; eran astillas degeneradas sin valor catastral |
-| `resultado_visita` (texto libre) | CASE de homologación a ilicodes (`No permitieron acceso` → `No_Permitieron_Acceso`, etc.) | Ver ETL sección 11 |
+| `resultado_visita` (texto libre) | Homologación a ilicodes (`No permitieron acceso` → `No_Permitieron_Acceso`, etc.) | Reglas en `config/homologaciones.csv` (antes un `CASE` en el ETL) |
 
-### Reglas globales nuevas del lote de 25 municipios (2026-11-20)
+### Reglas globales del lote de 25 municipios (2026-11-20)
 
-Ver `05_lote_25_municipios.md` §2–3.
+Ver `05_lote_25_municipios.md` §2–3. Todas dejan una métrica en el manifiesto (`verificar`).
 
 | Situación | Decisión |
 |---|---|
 | Homologaciones de dominio | Ya no son `CASE` en el SQL: `config/homologaciones.csv` (con la decisión que las originó) + `public.fx_hom`. Una regla cuyo destino no sea ilicode del dominio aborta la corrida |
 | Interesados, agrupaciones y miembros | Solo los titulares de derechos de predios migrados (antes: todo `gc_interesado` del municipio). Métrica `interesados_sin_derecho_migrado_excluidos` |
-| Linderos y puntos de lindero | Solo los que delimitan una unidad espacial migrada (`col_masccl`/`col_menosccl`) y sus puntos. Los puntos de levantamiento se migran todos. Métrica `excluido_linderos_sin_ue_migrada` |
+| Linderos y puntos de lindero | Solo los que delimitan una unidad espacial migrada (`col_masccl`/`col_menosccl`) y sus puntos. Los puntos de levantamiento se migran todos. Métrica `excluido_linderos_sin_ue_migrada`. Reemplaza lo dicho en Vergara ("se migran todos los linderos y puntos") |
 | `local_id` / `espacio_de_nombres` vacíos (`''`) en el origen | Se tratan como NULL → id / nombre de la clase (Chaguaní: 2 fuentes administrativas; ili2pg exporta, ilivalidator rechaza `Attribute Local_Id requires a value`) |
 | `comienzo_vida_util_version` NULL en el origen (MANDATORY). Preflight 2026-11-20: 10 de 25 municipios, ~500 objetos (terrenos, construcciones, unidades, características; Subachoque también 2 derechos y 3 interesados) | Terreno, construcción, unidad y derecho heredan la fecha de su predio (la menor si hay varios); el resto (características, interesados, agrupaciones, linderos, puntos) toma el 1 de enero de la vigencia, igual que las servidumbres. Métrica `imputado_comienzo_vida_util`. **Aprobada por el usuario 2026-11-20.** El interesado placeholder `SIN DATO` usaba `now()` (XTF distinto en cada corrida): ahora usa la misma regla |
-| Linderos con menos de 2 puntos (`col_puntoccl`) en el origen; el modelo exige ≥ 2 (`punto should associate 2 to *`, ilivalidator). Nocaima: 6 | Se excluyen con sus `col_masCcl`/`col_menosCcl` (los terrenos quedan). No se generan puntos desde la geometría. Métrica `excluido_linderos_menos_2_puntos` |
+| Linderos con menos de 2 puntos (`col_puntoccl`) en el origen; el modelo exige ≥ 2 (`punto should associate 2 to *`, ilivalidator). Nocaima: 7 | Se excluyen con sus `col_masCcl`/`col_menosCcl` (los terrenos quedan). No se generan puntos desde la geometría. Métrica `excluido_linderos_menos_2_puntos`; no se solapa con `excluido_linderos_sin_ue_migrada` (corregida 2026-11-21: antes contaba también estos) |
 | Áreas MANDATORY nulas en el origen (preflight: construcciones en Anapoima 12, Facatativá 14, Guatavita 12, San Antonio 37; unidades en Anapoima, Guatavita, Apulo, San Antonio; 1 característica en Villeta) | Construcción y unidad: área geométrica (igual que el terreno); características: suma de las áreas de sus unidades. Métrica `imputado_area_construida` |
 | `LC_Construccion.Identificador` (TEXT*20) vacío | Código de la construcción solo si cabe en 20 caracteres, si no el id de origen (Guatavita: 7 con el NPN de 30 en `codigo`) |
-| `AV_TipologiaConstruccion` de municipios 2023 | `tb_valortipologia` vigencia 2023 tomada de `acc_2024` (esquema `aux_tipologia`) |
+| `AV_TipologiaConstruccion` de municipios 2023 | `tb_valortipologia` vigencia 2023 tomada de `acc_2024` (esquema `aux_tipologia`). Reemplaza "vacía" de Vergara y Sutatausa (b) |
+| Polígono de terreno/construcción/unidad válido en el origen que el snap a 1 mm invalida (Nimaima: 1 construcción) | Respaldo `ST_ReducePrecision` sobre la geometría previa a la limpieza (`02_fix` sección 5b; ver catálogo de errores). `fix` es atómico: si un control ≠ 0 no hace commit |
+| Triggers/funciones del gestor en el dump (Sutatausa: 2 triggers que llaman a `attr_sync.*`, esquema que no viene) | `preparar` no los restaura (no aportan datos) y los registra en el manifiesto. `migrar.sh` sigue tolerando el error |
+| Validación | ili2pg exporta con `--disableValidation`; valida solo ilivalidator 1.15.0 (más estricto). Evita validar dos veces |
+
+Pendientes de decisión del usuario (no aplicadas): linderos gigantes de Nimaima, ZH inválidas a 1 mm (Guatavita,
+Tocaima) y derechos sin ninguna fuente (Supatá, Anapoima, Subachoque). Ver `05_...` §6.
 
 ### Tibacuy (cun25805)
 
@@ -52,7 +63,7 @@ Ver `05_lote_25_municipios.md` §2–3.
 | Situación | Decisión |
 |---|---|
 | id de origen hasta ~2,5 millones (predio, interesado, fuente, uebaunit…) | Offsets de t_id ampliados de 1M a 100M por clase en la plantilla (t_id bigint) |
-| El gestor no tiene `tb_valortipologia` | `av_tipologiaconstruccion` queda vacía (la plantilla omite el bloque con aviso) |
+| El gestor no tiene `tb_valortipologia` | `av_tipologiaconstruccion` queda vacía (la plantilla omite el bloque con aviso). En el lote se toma de `acc_2024` |
 | 143 pares repetidos (unidad espacial, predio) en `col_uebaunit` (62 construcciones, 81 unidades) | Se conserva el de menor id (`DISTINCT ON` en la plantilla) |
 | 85 predios sin unidad espacial | Se migran igual (regla común) |
 | ~60 polígonos con micro auto-intersección tras el snap | `ST_Buffer(0)` + limpieza, ahora global en `02_fix_validacion` |
@@ -114,11 +125,12 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
 | `AV_TipologiaConstruccion` | El backup no trae `tb_valortipologia`; se toman las 104 del operador aunque puedan venir a valor comercial (decisión del usuario 2026-10-14) |
 | Avalúo de unidades del operador | No se toma (`COMPLEMENTO_AVALUO_UNIDADES=no`, decisión del usuario 2026-10-14): no cuadra con el avalúo 2023 del gestor (mediana 2,3 % del avalúo del predio; p. ej. casa de 213,8 m² con unidad de $24.396) y mezcla escalas. El campo es opcional. Opción nueva de la etapa `complemento` (por defecto `si`: Sutatausa sin cambio) |
 
-## Catálogo de errores de validación ili2pg
+## Catálogo de errores de validación (ili2pg / ilivalidator)
 
-> Desde el lote de 25 municipios la validación final es **ili2pg + ilivalidator 1.15.0** (`scripts/lote.py`,
-> etapa `validar`). ilivalidator rechaza cosas que la validación del export de ili2pg deja pasar: textos
-> MANDATORY vacíos (`''`) como `Numero_Via` (Nemocón) o `Local_Id` (Chaguaní).
+> En el lote de 25 municipios valida **solo ilivalidator 1.15.0** (`scripts/lote.py`, etapa `validar`); ili2pg
+> exporta con `--disableValidation`. ilivalidator rechaza cosas que la validación del export de ili2pg deja
+> pasar: textos MANDATORY vacíos (`''`) como `Numero_Via` (Nemocón) o `Local_Id` (Chaguaní).
+> `migrar.sh` (flujo heredado) sigue validando con ili2pg al exportar.
 
 ### `Attribute <X> requires a value` (ilivalidator; ili2pg no lo reporta)
 
@@ -137,6 +149,7 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
 
 - **Causa**: la estrategia `t_id = N·10⁸ + id` no admite ids de origen tan grandes.
 - **Solución**: si aparece, cambiar a tabla de mapeo id_origen → t_id por secuencia.
+
 ### `duplicate coord at (x, y, z)`
 
 - **Causa raíz**: dos vértices consecutivos que quedan idénticos al redondear a 3 decimales
@@ -199,19 +212,51 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
   Las geometrías que ya salían válidas no cambian. **No** aplicarlo sobre la geometría ya dañada: el pico que
   crea el snap se convierte en un desplazamiento de 1,2 m.
 
+### `punto should associate 2 to * target objects` (ilivalidator)
+
+- **Causa**: lindero sin puntos o con 1 punto en `col_puntoccl` del origen (Nocaima 2026-11-20).
+- **Solución**: regla global de exclusión de linderos con < 2 puntos (ver reglas del lote).
+
+### ili2pg o ilivalidator no terminan (`validate target of role col_puntoCcl.ccl`)
+
+- **Causa**: lindero con decenas de miles de puntos (Nimaima: 38.308 y 16.569). El costo de validar la relación
+  crece más que proporcional al número de puntos por lindero: más de 30 min sin avanzar.
+- **Solución**: pendiente de decisión del usuario (`05_...` §6, D1). Detectar antes con un preflight de puntos
+  por lindero (en los demás municipios el máximo es 4.944).
+
+### `Intersection coord1 (...)` en una zona homogénea (ilivalidator)
+
+- **Causa**: ZH válida en el origen que el redondeo a 1 mm del XTF invalida, o ZH ya inválida en el origen
+  (Guatavita, Tocaima). Las ZH no pasan por limpieza (regla Sutatausa).
+- **Solución**: pendiente de decisión del usuario (`05_...` §6, D2).
+
+### `value too long for type character varying(20)` en el ETL
+
+- **Causa**: `gc_construccion.identificador` vacío; el ETL usaba el `codigo` (NPN de 30 caracteres) en
+  `LC_Construccion.Identificador` (TEXT*20) (Guatavita).
+- **Solución**: regla global del identificador (código solo si cabe en 20 caracteres, si no el id).
+
+### `FIX: controles distintos de 0: derechos_sin_fuente=N`
+
+- **Causa**: derecho sin `col_rrrfuente` y sin fuente en `col_unidadfuente` de su predio (Supatá 160).
+- **Solución**: pendiente de decisión del usuario (`05_...` §6, D3).
+
 ### Violación NOT NULL en el INSERT del ETL
 
-- **Causa**: campos MANDATORY del modelo con NULL en la fuente (ej. `documento_identidad`).
+- **Causa**: campos MANDATORY del modelo con NULL en la fuente (ej. `documento_identidad`,
+  `comienzo_vida_util_version`, `area_construccion`).
 - **Solución**: completar con dato real si existe en otros registros de la fuente (caso NIT
-  municipio); si no, placeholder documentado (`Sin_Dato`). Nunca dejar pasar silenciosamente:
-  registrar la decisión en este documento.
+  municipio, fecha del predio, área geométrica); si no, placeholder documentado (`Sin_Dato`). Nunca dejar pasar
+  silenciosamente: medir el alcance en todos los municipios y registrar la decisión en este documento.
 
 ## Lecciones de proceso
 
 1. **ili2pg escribe el XTF aunque la validación falle.** Verificar siempre que el log
-   termine en `...export done`. El XTF "fallido" de Tibirita circuló como si fuera válido.
-2. **Clonar `lev_cat_12` de una BD ya migrada** en vez de correr `--schemaimport` de nuevo:
-   garantiza t_id de catálogos idénticos y evita diferencias de flags.
+   termine en `...export done`. El XTF "fallido" de Tibirita circuló como si fuera válido. `lote.py` escribe
+   a `.parcial.xtf` y solo genera `.sha256` si ilivalidator termina en `...validation done`.
+2. **Esquema destino fijo**: no correr `--schemaimport` por municipio. `migrar.sh` clona `lev_cat_12` de una BD
+   ya migrada; `lote.py` carga `etl/esquema/lev_cat_12_plantilla.sql` (versionado). Así los t_id de catálogos
+   son idénticos y no hay diferencias de flags.
 3. La extensión **`uuid-ossp`** debe existir antes de restaurar el esquema clonado.
 4. **Prefijar los OID (`t_ili_tid`) con el municipio** (`md5('<mun>_tabla'||id)`): sin
    prefijo, dos municipios generan los mismos UUID para los mismos id y colisionarían al
@@ -221,7 +266,8 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
 6. Verificación de cierre que no falla: la **suma de avalúos** origen (vigencia) vs
    `lc_predio.avaluo_catastral` debe coincidir al peso.
 7. Algunos backups traen **triggers que llaman a `attr_sync.*`** (esquema externo que no viene en el dump;
-   p. ej. Sutatausa 2026-10-07). Fallan al restaurar sin afectar los datos: `preparar` tolera ese error.
+   p. ej. Sutatausa 2026-10-07). Fallan al restaurar sin afectar los datos: `migrar.sh` tolera ese error y
+   `lote.py` no restaura triggers ni funciones del gestor.
 8. **Documentos de identidad con espacios no separables (U+00A0)** al final (Sutatausa: 25 cédulas).
    `trim()` no los quita, así que `'1074888324'` y `'1074888324  '` parecen personas distintas y los
    duplicados no se detectan ni se reutilizan. Normalizar con
@@ -231,3 +277,10 @@ Backup `nemocon_25486_v2023_202610141544.sql` (histórico de avalúos 2019–202
 9. **Verificar el XTF contra las observaciones del cliente, no solo contra el validador.** El XTF de
    Sutatausa era válido para ili2pg y aun así conservaba los hallazgos de la SNR. Además el ETL filtra
    datos (p. ej. fuentes sin derecho), así que un XTF limpio no prueba que la base fuente lo esté.
+10. **ilivalidator es más estricto que la validación de ili2pg** (textos vacíos, cardinalidades): la validación
+    de entrega es la de ilivalidator.
+11. **Medir antes de corregir**: cada falla nueva del lote se midió en los 25 municipios (preflight) antes de
+    crear la regla; así se detectaron de una vez fechas nulas en 10 municipios, linderos gigantes solo en
+    Nimaima y ZH inválidas solo en Guatavita y Tocaima.
+12. **Recursos**: con 16 GB y ~2,5 GB libres, Java puede quedarse sin memoria en municipios grandes; definir
+    `JAVA_XMX` y no lanzar corridas largas como tareas en segundo plano de Claude Code (las detiene).
