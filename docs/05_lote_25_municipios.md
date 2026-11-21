@@ -1,6 +1,6 @@
 # Lote de 25 municipios con actualización catastral (vigencias 2023 y 2024)
 
-> Iniciado 2026-11-20 en la rama `lote-25-municipios` (sin push). Proceso: `scripts/lote.py` (§4).
+> Iniciado 2026-11-20 en la rama `lote-25-municipios` (publicada en `origin` el 2026-11-21). Proceso: `scripts/lote.py` (§4).
 > Última actualización: 2026-11-21. **Para retomar en una sesión nueva, ir a §7.**
 
 ## 1. Universo
@@ -204,7 +204,7 @@ Cada una se implementaría como regla global en la plantilla, con métrica en `v
 
 ## 7. Retomar aquí (sesión nueva)
 
-Estado al cerrar la sesión del 2026-11-21: rama `lote-25-municipios`, sin push, árbol limpio, nada corriendo.
+Estado al cerrar la sesión del 2026-11-21: rama `lote-25-municipios` (publicada en `origin`), árbol limpio, nada corriendo.
 Las BD de trabajo `l25_*` existentes se recrean al correr.
 
 1. **Comprobar entorno**: `git status` limpio en la rama; `.env` con `JAVA_XMX=4g` (lo agrega el usuario; el
@@ -219,7 +219,7 @@ Las BD de trabajo `l25_*` existentes se recrean al correr.
 5. **Corrida final uniforme**: commit sin cambios en `etl/`, `config/`, `scripts/`; re-correr los 25 desde
    `preparar` (idealmente `python scripts/lote.py --todos` en la terminal del usuario, con `JAVA_XMX`); comparar
    cada sha256 con el anterior y explicar cualquier diferencia; verificar `codigo.git_sin_commit` vacío en los 25.
-6. **Cerrar**: `python scripts/lote.py --reporte`, actualizar §5, commit. Push o PR solo si el usuario lo pide.
+6. **Cerrar**: `python scripts/lote.py --reporte`, actualizar §5, commit y push de la rama. PR a `master` solo si el usuario lo pide.
 
 Fuera de este lote (etapas posteriores, sin fecha):
 
